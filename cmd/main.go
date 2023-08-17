@@ -97,7 +97,13 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 		return nil, err
 	}
 
+	_, injectorCleanFunc, err := app.BuildWireInject()
+	if err != nil {
+		return nil, err
+	}
+
 	return func() {
 		loggerCleanFunc()
+		injectorCleanFunc()
 	}, nil
 }
