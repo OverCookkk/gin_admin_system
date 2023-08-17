@@ -3,8 +3,13 @@ package dao
 import (
 	"gin_admin_system/internal/app/config"
 	"gin_admin_system/internal/app/dao/menu"
+	"github.com/google/wire"
 	"gorm.io/gorm"
 	"strings"
+)
+
+var RepoSet = wire.NewSet(
+	menu.MenuSet,
 )
 
 func AutoMigrate(db *gorm.DB) error {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"gin_admin_system/internal/app"
 	"gin_admin_system/internal/app/config"
 	"gin_admin_system/pkg/logger"
@@ -97,13 +98,30 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 		return nil, err
 	}
 
-	_, injectorCleanFunc, err := app.BuildWireInject()
+	// injector 依赖注入容器
+	injector, injectorCleanFunc, err := app.BuildWireInject()
 	if err != nil {
 		return nil, err
 	}
+
+	// 直接启动服务
+	injector.GinEngine.Run(fmt.Sprintf("%s:%d", config.C.HTTP.Host, config.C.HTTP.Port))
 
 	return func() {
 		loggerCleanFunc()
 		injectorCleanFunc()
 	}, nil
 }
+
+/*
+func InitHttpServer(ctx context.Context, handler http.Handler) func() {
+	cfg := config.C.HTTP
+	server := &http.Server{
+		Addr:         fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Handler:      handler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  30 * time.Second,
+	}
+}
+*/

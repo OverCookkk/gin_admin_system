@@ -7,7 +7,10 @@
 package app
 
 import (
+	"gin_admin_system/internal/app/api"
 	"gin_admin_system/internal/app/dao/menu"
+	"gin_admin_system/internal/app/router"
+	"gin_admin_system/internal/app/service"
 )
 
 // Injectors from wire.go:
@@ -17,11 +20,21 @@ func BuildWireInject() (*Injector, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	menuRepo := menu.MenuRepo{
+	menuRepo := &menu.MenuRepo{
 		DB: db,
 	}
-	injector := &Injector{
+	menuSrv := &service.MenuSrv{
 		MenuRepo: menuRepo,
+	}
+	menuApi := &api.MenuApi{
+		MenuSrv: menuSrv,
+	}
+	routerRouter := &router.Router{
+		MenuApi: menuApi,
+	}
+	engine := InitGinEngine(routerRouter)
+	injector := &Injector{
+		GinEngine: engine,
 	}
 	return injector, func() {
 		cleanup()

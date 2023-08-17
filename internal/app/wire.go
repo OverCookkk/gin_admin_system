@@ -2,13 +2,23 @@
 
 package app
 
-import "github.com/google/wire"
-import "gin_admin_system/internal/app/dao/menu"
+import (
+	"gin_admin_system/internal/app/dao"
+	"github.com/google/wire"
+
+	"gin_admin_system/internal/app/api"
+	"gin_admin_system/internal/app/router"
+	"gin_admin_system/internal/app/service"
+)
 
 func BuildWireInject() (*Injector, func(), error) {
 	wire.Build(
 		InitGormDB,
-		menu.MenuSet,
+		dao.RepoSet,
+		service.ServiceSet,
+		api.ApiSet,
+		router.RouterSet,
+		InitGinEngine,
 		InjectorSet,
 	)
 	return new(Injector), nil, nil
