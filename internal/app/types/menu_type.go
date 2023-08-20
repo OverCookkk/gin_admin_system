@@ -29,12 +29,13 @@ type Menu struct {
 
 // MenuQueryReq 菜单查询请求
 type MenuQueryReq struct {
+	PaginationParam
 }
 
 // MenuQueryResp 菜单查询响应
 type MenuQueryResp struct {
-	Data       []*Menu
-	PageResult *PaginationResult
+	Data       []Menu           `json:"menu_list"`
+	PageResult PaginationResult `json:"page_result"`
 }
 
 // PaginationResult 分页结果
@@ -53,4 +54,23 @@ type MenuQueryOptions struct {
 type OrderField struct {
 	Key       string
 	Direction OrderDirection // 排序的方向
+}
+
+func NewOrderFields(orderFields ...*OrderField) []*OrderField {
+	return orderFields
+}
+
+func NewOrderField(key string, d OrderDirection) *OrderField {
+	return &OrderField{
+		Key:       key,
+		Direction: d,
+	}
+}
+
+// 分页参数
+type PaginationParam struct {
+	Pagination bool `form:"-"`
+	OnlyCount  bool `form:"-"`
+	Current    int  `form:"current,default=1"`
+	PageSize   int  `form:"pageSize,default=10" binding:"max=100"`
 }

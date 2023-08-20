@@ -1,6 +1,15 @@
 package menu
 
-import "gorm.io/gorm"
+import (
+	"context"
+	"gin_admin_system/internal/app/types"
+	"github.com/jinzhu/copier"
+	"gorm.io/gorm"
+)
+
+func GetMenuDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
+	return defDB.Model(new(Menu))
+}
 
 // Menu 菜单数据库实体结构
 type Menu struct {
@@ -17,4 +26,22 @@ type Menu struct {
 	Creator    uint64  `gorm:""`                                   // 创建人
 	// MenuAction MenuAction `gorm:"foreignKey:MyUserID"
 	MenuAction []MenuAction `gorm:"many2many:menu_menu_actions;"` // 菜单动作关联
+}
+
+// 把[]*Menu定义为Menus，这样可以为它定义方法
+type Menus []*Menu
+
+// 把数据库的对应的menu转换为返回前端的menu
+func (m Menu) ToTypesMenu() *types.Menu {
+	menu := &types.Menu{}
+	copier.Copy(m, menu)
+	return menu
+}
+
+func (m Menus) ToTypesMenus() []types.Menu {
+	list := make([]types.Menu, len(m))
+	for _, v := range m {
+		list = append(list, *(v.ToTypesMenu()))
+	}
+	return list
 }
