@@ -12,6 +12,10 @@ type MenuApi struct {
     MenuSrv *service.MenuSrv
 }
 
+func (m *MenuApi) Query(c *gin.Context) {
+
+}
+
 func (m *MenuApi) Create(c *gin.Context) {
 
 }
