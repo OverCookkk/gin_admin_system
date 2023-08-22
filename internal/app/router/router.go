@@ -43,7 +43,9 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 		// 菜单
 		gMenu := v1.Group("/menus")
 		{
+			gMenu.GET("/menus", r.MenuApi.Query)
 			gMenu.POST("Create", r.MenuApi.Create)
+			gMenu.GET(":id", r.MenuApi.Get)
 		}
 	}
 }

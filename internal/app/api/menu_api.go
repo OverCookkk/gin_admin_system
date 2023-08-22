@@ -35,6 +35,15 @@ func (m *MenuApi) Query(c *gin.Context) {
 	app.OkWithData(result, c)
 }
 
+// QueryMenuTree 返回菜单树，包括孩子树
+func (m *MenuApi) QueryMenuTree(c *gin.Context) {
+
+}
+
+func (m *MenuApi) Get(c *gin.Context) {
+	m.MenuSrv.Get(c.Request.Context(), 1)
+}
+
 func (m *MenuApi) Create(c *gin.Context) {
 
 }

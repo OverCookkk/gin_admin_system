@@ -20,3 +20,11 @@ func (m *MenuSrv) Query(ctx context.Context, req types.MenuQueryReq, opt types.M
 	}
 	return result, nil
 }
+
+func (m *MenuSrv) Get(ctx context.Context, id uint64) (*types.Menu, error) {
+	menuItem, err := m.MenuRepo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return menuItem, nil
+}
