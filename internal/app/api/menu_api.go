@@ -6,6 +6,7 @@ import (
 	"gin_admin_system/internal/app/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"strconv"
 )
 
 var MenuApiSet = wire.NewSet(wire.Struct(new(MenuApi), "*"))
@@ -41,9 +42,23 @@ func (m *MenuApi) QueryMenuTree(c *gin.Context) {
 }
 
 func (m *MenuApi) Get(c *gin.Context) {
-	m.MenuSrv.Get(c.Request.Context(), 1)
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+	menuItem, err := m.MenuSrv.Get(c.Request.Context(), id)
+	if err != nil {
+		return
+	}
+	app.OkWithData(menuItem, c)
 }
 
 func (m *MenuApi) Create(c *gin.Context) {
-
+	var item types.Menu
+	if err := c.ShouldBindJSON(&item); err != nil {
+		// 参数错误
+		// app.ReturnWithDetailed()
+		return
+	}
 }
