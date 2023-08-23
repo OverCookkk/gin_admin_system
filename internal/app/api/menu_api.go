@@ -61,4 +61,9 @@ func (m *MenuApi) Create(c *gin.Context) {
 		// app.ReturnWithDetailed()
 		return
 	}
+	idResult, err := m.MenuSrv.Create(c.Request.Context(), item)
+	if err != nil {
+		return
+	}
+	app.OkWithData(idResult, c)
 }

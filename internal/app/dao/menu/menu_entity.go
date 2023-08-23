@@ -34,7 +34,7 @@ type Menus []*Menu
 // 把数据库的对应的menu转换为返回前端的menu
 func (m Menu) ToTypesMenu() *types.Menu {
 	menu := &types.Menu{}
-	copier.Copy(menu, m)
+	copier.Copy(menu, m) // m赋值给menu
 	return menu
 }
 
@@ -44,4 +44,13 @@ func (m Menus) ToTypesMenus() []types.Menu {
 		list = append(list, *(v.ToTypesMenu()))
 	}
 	return list
+}
+
+type TypesMenu types.Menu
+
+// 把返回前端的menu转换为数据库的对应的menu
+func (m TypesMenu) ToMenu() *Menu {
+	menu := &Menu{}
+	copier.Copy(menu, m)
+	return menu
 }

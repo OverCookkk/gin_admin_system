@@ -30,6 +30,9 @@ type Menu struct {
 // MenuQueryReq 菜单查询请求
 type MenuQueryReq struct {
 	PaginationParam
+	Name             string `form:"-"`        // 菜单名称
+	ParentID         uint64 `form:"parentID"` // 父级id
+	PrefixParentPath string `form:"-"`        // 父级路径(前缀模糊查询)
 }
 
 // MenuQueryResp 菜单查询响应
@@ -73,4 +76,8 @@ type PaginationParam struct {
 	OnlyCount  bool `form:"-"`
 	Current    int  `form:"current,default=1"`
 	PageSize   int  `form:"pageSize,default=10" binding:"max=100"`
+}
+
+type IDResult struct {
+	ID uint64 `json:"id"`
 }
