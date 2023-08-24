@@ -67,3 +67,62 @@ func (m *MenuApi) Create(c *gin.Context) {
 	}
 	app.OkWithData(idResult, c)
 }
+
+func (m *MenuApi) Update(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	var item types.Menu
+	if err := c.ShouldBindJSON(&item); err != nil {
+		// 参数错误
+		// app.ReturnWithDetailed()
+		return
+	}
+	err = m.MenuSrv.Update(c.Request.Context(), id, item)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (m *MenuApi) Delete(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+	err = m.MenuSrv.Delete(c.Request.Context(), id)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (m *MenuApi) Enable(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+	err = m.MenuSrv.UpdateStatus(c.Request.Context(), id, 1)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (m *MenuApi) DisEnable(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+	err = m.MenuSrv.UpdateStatus(c.Request.Context(), id, 2)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}

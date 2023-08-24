@@ -83,3 +83,19 @@ func (m *MenuRepo) UpdateParentPath(ctx context.Context, id uint64, parentPath s
 	}
 	return nil
 }
+
+func (m *MenuRepo) Delete(ctx context.Context, id uint64) error {
+	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Delete(&Menus{})
+	if err := result.Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MenuRepo) UpdateStatus(ctx context.Context, id uint64, status int) error {
+	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Update("status", status)
+	if err := result.Error; err != nil {
+		return err
+	}
+	return nil
+}

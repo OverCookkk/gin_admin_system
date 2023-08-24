@@ -145,3 +145,42 @@ func (m *MenuSrv) updateChildParentPath(ctx context.Context, oldItem, newItem ty
 	}
 	return nil
 }
+
+func (m *MenuSrv) Delete(ctx context.Context, id uint64) error {
+	// 先查询该id的菜单是否存在
+	item, err := m.MenuRepo.Get(ctx, id)
+	if err != nil {
+		return err
+	} else if item == nil {
+		return errors.New("not found")
+	}
+
+	// 再查询该id的菜单是否有子菜单，如果有，则禁止删除该菜单
+	childItems, err := m.MenuRepo.Query(ctx, types.MenuQueryReq{
+		ParentID: id,
+	})
+	if err != nil {
+		return err
+	} else if len(childItems.Data) != 0 {
+		return errors.New("forbid delete")
+	}
+
+	// todo 事务实现 TransRepo.Exec；删除MenuActionResource和MenuAction
+
+	// 删除该id的菜单
+	return m.MenuRepo.Delete(ctx, id)
+}
+
+func (m *MenuSrv) UpdateStatus(ctx context.Context, id uint64, status int) error {
+	// 先查询该id的菜单是否存在
+	item, err := m.MenuRepo.Get(ctx, id)
+	if err != nil {
+		return err
+	} else if item == nil {
+		return errors.New("not found")
+	} else if item.Status == status {
+		return nil
+	}
+
+	return m.MenuRepo.UpdateStatus(ctx, id, status)
+}
