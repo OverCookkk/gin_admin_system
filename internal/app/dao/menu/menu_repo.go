@@ -25,9 +25,23 @@ func (m *MenuRepo) getQueryOption(opts ...types.MenuQueryOptions) types.MenuQuer
 // 查询
 func (m *MenuRepo) Query(ctx context.Context, req types.MenuQueryReq, opts ...types.MenuQueryOptions) (*types.MenuQueryResp, error) {
 	opt := m.getQueryOption(opts...)
+
 	db := GetMenuDB(ctx, m.DB)
-	if req.PrefixParentPath != "" {
+	// 设置查询条件
+	if len(req.IDs) > 0 {
+		db = db.Where("id in (?)", req.IDs)
+	}
+	if req.Name != "" {
+		db = db.Where("name=?", req.Name)
+	}
+	if req.PrefixParentPath != "" { // 修改菜单的时候需要查询到它的父路径
 		db = db.Where("parent_path like ?", req.PrefixParentPath+"%") // 模糊查询
+	}
+	if req.IsShow != 0 {
+		db = db.Where("is_show=?", req.IsShow)
+	}
+	if req.Status != 0 {
+		db = db.Where("status=?", req.Status)
 	}
 
 	if len(opt.OrderFields) > 0 {

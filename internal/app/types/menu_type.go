@@ -30,9 +30,12 @@ type Menu struct {
 // MenuQueryReq 菜单查询请求
 type MenuQueryReq struct {
 	PaginationParam
-	Name             string `form:"-"`        // 菜单名称
-	ParentID         uint64 `form:"parentID"` // 父级id
-	PrefixParentPath string `form:"-"`        // 父级路径(前缀模糊查询)
+	IDs              []uint64 `form:"-"`        // 唯一标识列表
+	Name             string   `form:"-"`        // 菜单名称
+	ParentID         uint64   `form:"parentID"` // 父级id
+	PrefixParentPath string   `form:"-"`        // 父级路径(前缀模糊查询)
+	IsShow           int      `form:"isShow"`   // 是否显示(1:显示 2:隐藏)
+	Status           int      `form:"status"`   // 状态(1:启用 2:禁用)
 }
 
 // MenuQueryResp 菜单查询响应
