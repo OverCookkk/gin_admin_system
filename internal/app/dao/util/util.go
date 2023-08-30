@@ -20,6 +20,7 @@ func ParseOrder(orderField []*types.OrderField) string {
 	return strings.Join(orders, ",")
 }
 
+// WrapPageQuery 封装通用分页查询数据库方法，out：输出列表，返回分页结果
 func WrapPageQuery(ctx context.Context, db *gorm.DB, params types.PaginationParam, out interface{}) (*types.PaginationResult, error) {
 	var count int64
 	err := db.Count(&count).Error
