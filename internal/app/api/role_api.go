@@ -6,6 +6,7 @@ import (
 	"gin_admin_system/internal/app/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"strconv"
 )
 
 var RoleApiSet = wire.NewSet(wire.Struct(new(RoleApi)), "*")
@@ -14,7 +15,7 @@ type RoleApi struct {
 	RoleSrv *service.RoleSrv
 }
 
-func (m *RoleApi) Query(c *gin.Context) {
+func (r *RoleApi) Query(c *gin.Context) {
 	var req types.RoleQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
@@ -23,7 +24,7 @@ func (m *RoleApi) Query(c *gin.Context) {
 	}
 
 	// 此处封装了NewOrderFields和NewOrderField两个函数，巧妙在NewOrderField函数参数使用...传切片的特性，使得可以直接生成一个切片结构体
-	result, err := m.RoleSrv.Query(c.Request.Context(), req, types.RoleQueryOptions{
+	result, err := r.RoleSrv.Query(c.Request.Context(), req, types.RoleQueryOptions{
 		OrderFields: types.NewOrderFields(
 			types.NewOrderField("sequence", types.OrderByDesc),
 		),
@@ -32,4 +33,93 @@ func (m *RoleApi) Query(c *gin.Context) {
 		return
 	}
 	app.OkWithData(result, c)
+}
+
+func (r *RoleApi) Get(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+	menuItem, err := r.RoleSrv.Get(c.Request.Context(), id)
+	if err != nil {
+		return
+	}
+	app.OkWithData(menuItem, c)
+}
+
+func (r *RoleApi) Create(c *gin.Context) {
+	var item types.Role
+	if err := c.ShouldBindJSON(&item); err != nil {
+		// 参数错误
+		// app.ReturnWithDetailed()
+		return
+	}
+	idResult, err := r.RoleSrv.Create(c, item)
+	if err != nil {
+		return
+	}
+	app.OkWithData(idResult, c)
+}
+
+func (r *RoleApi) Update(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	var item types.Role
+	if err := c.ShouldBindJSON(&item); err != nil {
+		// 参数错误
+		// app.ReturnWithDetailed()
+		return
+	}
+	err = r.RoleSrv.Update(c, id, item)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (r *RoleApi) Delete(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	err = r.RoleSrv.Delete(c, id)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (r *RoleApi) Enable(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	err = r.RoleSrv.UpdateStatus(c, id, 1)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
+}
+
+func (r *RoleApi) Disable(c *gin.Context) {
+	idVal := c.Param("id")
+	id, err := strconv.ParseUint(idVal, 10, 64)
+	if err != nil {
+		id = 0
+	}
+
+	err = r.RoleSrv.UpdateStatus(c, id, 2)
+	if err != nil {
+		return
+	}
+	app.Ok(c)
 }
