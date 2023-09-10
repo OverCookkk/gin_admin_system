@@ -13,9 +13,9 @@ func GetRoleMenuDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
 
 type RoleMenu struct {
 	gorm.Model
-	RoleID   uint64 `json:"role_id,string" binding:"required"`   // 角色ID，角色有哪些菜单权限，所以角色要与RoleMenus绑定
-	MenuID   uint64 `json:"menu_id,string" binding:"required"`   // 菜单ID
-	ActionID uint64 `json:"action_id,string" binding:"required"` // 动作ID
+	RoleID   uint64 `gorm:"index;not null;"` // 角色ID，角色有哪些菜单权限，所以角色要与RoleMenus绑定
+	MenuID   uint64 `gorm:"index;not null;"` // 菜单ID
+	ActionID uint64 `gorm:"index;not null;"` // 动作ID
 }
 
 type TypesRoleMenu types.RoleMenu

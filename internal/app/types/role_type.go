@@ -8,7 +8,7 @@ type Role struct {
 	Memo      string    `json:"memo"`                                  // 备注
 	Status    int       `json:"status" binding:"required,max=2,min=1"` // 状态(1:启用 2:禁用)
 	Creator   uint64    `json:"creator"`                               // 创建者
-	RoleMenus RoleMenus `json:"role_menus" binding:"required,gt=0"`    // 角色菜单列表
+	RoleMenus RoleMenus `json:"role_menus" binding:"required,gt=0"`    // 角色菜单列表，菜单与操作组合，所以是个数组
 }
 
 type RoleQueryReq struct {
@@ -30,7 +30,7 @@ type RoleQueryOptions struct {
 	SelectFields []string      // 查询字段
 }
 
-// --------------------角色下管理的菜单------------------------
+// RoleMenu --------------------角色下管理的菜单------------------------
 type RoleMenu struct {
 	// ID       uint64 `json:"id,string"`                           // 唯一标识
 	RoleID   uint64 `json:"role_id,string" binding:"required"`   // 角色ID，角色有哪些菜单权限，所以角色要与RoleMenus绑定

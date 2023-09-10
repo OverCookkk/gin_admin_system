@@ -21,3 +21,11 @@ func (r *RoleMenuRepo) Create(ctx context.Context, item types.RoleMenu) error {
 	}
 	return nil
 }
+
+func (r *RoleMenuRepo) DeleteByRoleID(ctx context.Context, id uint64) error {
+	result := GetRoleDB(ctx, r.DB).Where("role_id=?", id).Delete(&RoleMenu{})
+	if err := result.Error; err != nil {
+		return err
+	}
+	return nil
+}
