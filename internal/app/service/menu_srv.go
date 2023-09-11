@@ -12,8 +12,9 @@ import (
 var MenuSrvSet = wire.NewSet(wire.Struct(new(MenuSrv), "*"))
 
 type MenuSrv struct {
-	MenuRepo       *menu.MenuRepo
-	MenuActionRepo *menu.MenuActionRepo
+	MenuRepo               *menu.MenuRepo
+	MenuActionRepo         *menu.MenuActionRepo
+	MenuActionResourceRepo *menu.MenuActionResourceRepo
 }
 
 func (m *MenuSrv) Query(ctx context.Context, req types.MenuQueryReq, opt types.MenuQueryOptions) (*types.MenuQueryResp, error) {
@@ -58,15 +59,38 @@ func (m *MenuSrv) Get(ctx context.Context, id uint64) (*types.Menu, error) {
 	}
 
 	// 2、再获取菜单操作信息；查找特定的menuid的action
-	_, err = m.MenuActionRepo.Query(ctx, types.MenuActionQueryReq{
+	menuActionResult, err := m.MenuActionRepo.Query(ctx, types.MenuActionQueryReq{
 		MenuID: id,
 	})
 
 	// 3、获取菜单操作中的资源信息
+	menuActionResourceResult, err := m.MenuActionResourceRepo.Query(ctx, types.MenuActionResourceQueryReq{
+		PaginationParam: types.PaginationParam{}, // 里面有默认参数
+		MenuID:          id,
+	})
 
 	// 4、合并菜单操作信息和菜单操作中的资源信息  到 菜单总体信息中
-
+	m.fillMenuActionResource(menuActionResult.Data, menuActionResourceResult.Data) // 先把菜单操作资源信息 合并到 菜单操作信息中
+	temp := make(types.MenuActions, 0, len(menuActionResult.Data))                 // 再把菜单操作信息 合并到 菜单总体信息 中
+	for _, v := range menuActionResult.Data {
+		temp = append(temp, &v)
+	}
+	menuItem.Actions = temp
 	return menuItem, nil
+}
+
+func (m *MenuSrv) fillMenuActionResource(menuActions []types.MenuAction, menuActionResources []types.MenuActionResource) {
+	// action_id,types.MenuActionResource。	menuActionResources是所有不同action_id的menuActionResource集合，把action_id的所有动作集合到一个types.MenuActionResources里
+	actionResourceMap := make(map[uint64]types.MenuActionResources)
+	for _, v := range menuActionResources {
+		actionResourceMap[v.ActionID] = append(actionResourceMap[v.ActionID], &v)
+	}
+
+	for _, v := range menuActions {
+		if actionResources, ok := actionResourceMap[v.ID]; ok {
+			v.Resources = actionResources
+		}
+	}
 }
 
 func (m *MenuSrv) checkMenuName(ctx context.Context, item types.Menu) error {

@@ -83,3 +83,21 @@ type MenuActionResource struct {
 	Method   string `json:"method"`           // 资源请求方式(支持正则)
 	Path     string `json:"path"`             // 资源请求路径（支持/:id匹配）
 }
+
+// MenuActionResourceQueryReq 查询条件
+type MenuActionResourceQueryReq struct {
+	PaginationParam
+	MenuID uint64 // 菜单ID
+	// MenuIDs []uint64 // 菜单ID列表
+}
+
+// MenuActionResourceQueryResp 菜单动作查询响应
+type MenuActionResourceQueryResp struct {
+	Data       []MenuActionResource `json:"menu_action_resource_list"`
+	PageResult PaginationResult     `json:"page_result"`
+}
+
+// MenuActionResourceQueryOptions 查询可选参数项
+type MenuActionResourceQueryOptions struct {
+	OrderFields []*OrderField // 排序字段
+}

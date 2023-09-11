@@ -28,9 +28,9 @@ func (m *MenuActionRepo) Query(ctx context.Context, req types.MenuActionQueryReq
 
 	db := GetMenuActionDB(ctx, m.DB)
 	// 设置查询条件
-	// if len(req.ID) > 0 {
-	//     db = db.Where("id in (?)", req.ID)
-	// }
+	if req.MenuID != 0 {
+		db = db.Where("menu_id=?", req.MenuID)
+	}
 
 	if len(opt.OrderFields) > 0 {
 		db = db.Order(util.ParseOrder(opt.OrderFields))
