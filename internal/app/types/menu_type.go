@@ -2,13 +2,6 @@ package types
 
 import "time"
 
-type OrderDirection int
-
-const (
-	OrderByAsc OrderDirection = iota + 1
-	OrderByDesc
-)
-
 // Menu 菜单对象
 type Menu struct {
 	ID         uint64    `json:"id,string"`                              // 唯一标识
@@ -44,43 +37,8 @@ type MenuQueryResp struct {
 	PageResult PaginationResult `json:"page_result"`
 }
 
-// PaginationResult 分页结果
-type PaginationResult struct {
-	Total       int64 `json:"total"`
-	CurrentPage int   `json:"current_page"`
-	PageSize    int   `json:"page_size"`
-}
-
 // MenuQueryOptions 菜单查询可选参数，如排序方向等
 type MenuQueryOptions struct {
 	OrderFields  []*OrderField
 	SelectFields []string
-}
-
-type OrderField struct {
-	Key       string
-	Direction OrderDirection // 排序的方向
-}
-
-func NewOrderFields(orderFields ...*OrderField) []*OrderField {
-	return orderFields
-}
-
-func NewOrderField(key string, d OrderDirection) *OrderField {
-	return &OrderField{
-		Key:       key,
-		Direction: d,
-	}
-}
-
-// 分页参数
-type PaginationParam struct {
-	Pagination bool `form:"-"`
-	OnlyCount  bool `form:"-"`
-	Current    int  `form:"current,default=1"`
-	PageSize   int  `form:"pageSize,default=10" binding:"max=100"`
-}
-
-type IDResult struct {
-	ID uint64 `json:"id"`
 }
