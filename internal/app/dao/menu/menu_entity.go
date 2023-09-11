@@ -25,11 +25,8 @@ type Menu struct {
 	Memo       *string `gorm:"size:1024;"`                         // 备注
 	Creator    uint64  `gorm:""`                                   // 创建人
 	// MenuAction MenuAction `gorm:"foreignKey:MyUserID"
-	MenuAction []MenuAction `gorm:"many2many:menu_menu_actions;"` // 菜单动作关联
+	// MenuAction []MenuAction `gorm:"many2many:menu_menu_actions;"` // 菜单动作关联
 }
-
-// 把[]*Menu定义为Menus，这样可以为它定义方法
-type Menus []*Menu
 
 // 把数据库的对应的menu转换为返回前端的menu
 func (m Menu) ToTypesMenu() *types.Menu {
@@ -37,6 +34,9 @@ func (m Menu) ToTypesMenu() *types.Menu {
 	copier.Copy(menu, m) // m赋值给menu
 	return menu
 }
+
+// 把[]*Menu定义为Menus，这样可以为它定义方法
+type Menus []*Menu
 
 func (m Menus) ToTypesMenus() []types.Menu {
 	list := make([]types.Menu, 0, len(m))

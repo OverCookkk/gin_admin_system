@@ -15,6 +15,7 @@ type MenuApi struct {
 	MenuSrv *service.MenuSrv
 }
 
+// Query 查询全部菜单大概信息
 func (m *MenuApi) Query(c *gin.Context) {
 	var req types.MenuQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
@@ -41,6 +42,7 @@ func (m *MenuApi) QueryMenuTree(c *gin.Context) {
 
 }
 
+// Get 获取单个菜单的具体信息
 func (m *MenuApi) Get(c *gin.Context) {
 	idVal := c.Param("id")
 	id, err := strconv.ParseUint(idVal, 10, 64)

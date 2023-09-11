@@ -12,22 +12,60 @@ import (
 var MenuSrvSet = wire.NewSet(wire.Struct(new(MenuSrv), "*"))
 
 type MenuSrv struct {
-	MenuRepo *menu.MenuRepo
+	MenuRepo       *menu.MenuRepo
+	MenuActionRepo *menu.MenuActionRepo
 }
 
 func (m *MenuSrv) Query(ctx context.Context, req types.MenuQueryReq, opt types.MenuQueryOptions) (*types.MenuQueryResp, error) {
-	result, err := m.MenuRepo.Query(ctx, req, opt)
+	// 先查询菜单动作，返回所有菜单的菜单动作（menuActionResult）
+	menuActionResult, err := m.MenuActionRepo.Query(ctx, types.MenuActionQueryReq{
+		PaginationParam: types.PaginationParam{}, // PaginationParam有默认值
+	})
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+
+	// 再查菜单总体信息
+	menuResult, err := m.MenuRepo.Query(ctx, req, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	// 把菜单动作信息填充到菜单总体信息中，menuResult和menuActionResult都是types中的结构体（返回给前端的结构体）
+	m.fillMenuAction(menuResult.Data, menuActionResult.Data)
+	return menuResult, nil
+}
+
+func (m *MenuSrv) fillMenuAction(menus []types.Menu, menuActions []types.MenuAction) {
+	// menu_id,types.MenuAction。	menuActions是所有不同menu_id的menuAction集合，把menu_id的所有动作集合到一个types.MenuActions里
+	actionMap := make(map[uint64]types.MenuActions)
+	for _, v := range menuActions {
+		actionMap[v.MenuID] = append(actionMap[v.MenuID], &v)
+	}
+
+	for _, v := range menus {
+		if actions, ok := actionMap[v.ID]; ok {
+			v.Actions = actions
+		}
+	}
 }
 
 func (m *MenuSrv) Get(ctx context.Context, id uint64) (*types.Menu, error) {
+	// 1、先获取单个菜单总体信息
 	menuItem, err := m.MenuRepo.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+
+	// 2、再获取菜单操作信息；查找特定的menuid的action
+	_, err = m.MenuActionRepo.Query(ctx, types.MenuActionQueryReq{
+		MenuID: id,
+	})
+
+	// 3、获取菜单操作中的资源信息
+
+	// 4、合并菜单操作信息和菜单操作中的资源信息  到 菜单总体信息中
+
 	return menuItem, nil
 }
 
