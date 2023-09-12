@@ -20,14 +20,14 @@ type Role struct {
 	Creator  uint64  `gorm:""`                                    // 创建者
 }
 
-// 把[]*Role定义为Roles，这样可以为它定义方法
-type Roles []*Role
-
 func (r Role) ToTypesRole() *types.Role {
 	role := &types.Role{}
 	copier.Copy(role, r)
 	return role
 }
+
+// 把[]*Role定义为Roles，这样可以为它定义方法
+type Roles []*Role
 
 func (m Roles) ToTypesRoles() []types.Role {
 	list := make([]types.Role, 0, len(m))

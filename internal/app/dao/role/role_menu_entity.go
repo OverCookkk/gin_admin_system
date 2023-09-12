@@ -18,6 +18,22 @@ type RoleMenu struct {
 	ActionID uint64 `gorm:"index;not null;"` // 动作ID
 }
 
+func (r RoleMenu) ToTypesRoleMenu() *types.RoleMenu {
+	role := &types.RoleMenu{}
+	copier.Copy(role, r)
+	return role
+}
+
+type RoleMenus []*RoleMenu
+
+func (r RoleMenus) ToTypesRoleMenus() []types.RoleMenu {
+	list := make([]types.RoleMenu, 0, len(r))
+	for _, v := range r {
+		list = append(list, *(v.ToTypesRoleMenu()))
+	}
+	return list
+}
+
 type TypesRoleMenu types.RoleMenu
 
 func (r TypesRoleMenu) ToRoleMenu() *RoleMenu {

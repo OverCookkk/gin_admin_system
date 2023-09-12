@@ -41,13 +41,13 @@ func (r *RoleSrv) Create(ctx context.Context, item types.Role) (*types.IDResult,
 
 	// TODO: 事务实现
 
-	// 角色表  create
+	// 先创建角色表
 	roleId, err := r.RoleRepo.Create(ctx, item)
 	if err != nil {
 		return nil, err
 	}
 
-	// 角色菜单表 create
+	// 再创建角色菜单表 create
 	for _, roleMenuItem := range item.RoleMenus {
 		// MenuID、ActionID前端会带过来
 		roleMenuItem.RoleID = roleId

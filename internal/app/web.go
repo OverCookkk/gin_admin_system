@@ -11,7 +11,7 @@ func InitGinEngine(r router.IRouter) *gin.Engine {
 
 	app := gin.New()
 
-	// 中间件
+	// TODO:中间件
 
 	r.Register(app)
 

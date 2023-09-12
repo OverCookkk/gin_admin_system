@@ -21,6 +21,7 @@ func (r *RoleRepo) getQueryOption(opts ...types.RoleQueryOptions) types.RoleQuer
 	}
 	return opt
 }
+
 func (r *RoleRepo) Query(ctx context.Context, req types.RoleQueryReq, opts ...types.RoleQueryOptions) (*types.RoleQueryResp, error) {
 	opt := r.getQueryOption(opts...)
 
