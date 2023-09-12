@@ -3,21 +3,24 @@ package service
 import (
 	"context"
 	"fmt"
+	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
 	"gin_admin_system/internal/app/types"
+	"github.com/casbin/casbin/v2"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
+	"strconv"
 )
 
 var RoleSet = wire.NewSet(wire.Struct(new(RoleSrv), "*"))
 
 type RoleSrv struct {
-	// Enforcer               *casbin.SyncedEnforcer
+	Enforcer *casbin.SyncedEnforcer
 	// TransRepo              *dao.TransRepo
 	RoleRepo     *role.RoleRepo
 	RoleMenuRepo *role.RoleMenuRepo
 	// UserRepo               *role.UserRepo
-	// MenuActionResourceRepo *dao.MenuActionResourceRepo
+	MenuActionResourceRepo *menu.MenuActionResourceRepo
 }
 
 func (r *RoleSrv) Query(ctx context.Context, req types.RoleQueryReq, opt types.RoleQueryOptions) (*types.RoleQueryResp, error) {
@@ -57,7 +60,24 @@ func (r *RoleSrv) Create(ctx context.Context, item types.Role) (*types.IDResult,
 		}
 	}
 
-	// TODO：权限控制
+	// 权限控制
+	// 通过menu_id查询到menu_action_resource信息
+	resources, err := r.MenuActionResourceRepo.Query(ctx, types.MenuActionResourceQueryReq{
+		PaginationParam: types.PaginationParam{}, // 默认参数
+		MenuIDs:         item.RoleMenus.ToMenuIDs(),
+	})
+	// 去重。不同的菜单动作下可能有相同的资源
+	resourceMap := make(map[string]*types.MenuActionResource)
+	for _, v := range resources.Data {
+		resourceMap[v.Method+v.Path] = &v
+	}
+	for _, v := range resourceMap {
+		// role_id, path, method
+		_, err := r.Enforcer.AddPermissionForUser(strconv.FormatUint(item.ID, 10), v.Path, v.Method)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &types.IDResult{ID: roleId}, nil
 }

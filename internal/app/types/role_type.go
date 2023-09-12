@@ -59,3 +59,19 @@ type RoleMenuQueryOptions struct {
 
 // RoleMenus 角色菜单列表
 type RoleMenus []*RoleMenu
+
+// ToMenuIDs 转换为菜单ID列表
+func (a RoleMenus) ToMenuIDs() []uint64 {
+	var idList []uint64
+	m := make(map[uint64]struct{})
+
+	for _, item := range a {
+		if _, ok := m[item.MenuID]; ok {
+			continue
+		}
+		idList = append(idList, item.MenuID)
+		m[item.MenuID] = struct{}{}
+	}
+
+	return idList
+}

@@ -87,8 +87,8 @@ type MenuActionResource struct {
 // MenuActionResourceQueryReq 查询条件
 type MenuActionResourceQueryReq struct {
 	PaginationParam
-	MenuID uint64 // 菜单ID
-	// MenuIDs []uint64 // 菜单ID列表
+	MenuID  uint64   // 菜单ID
+	MenuIDs []uint64 // 菜单ID列表
 }
 
 // MenuActionResourceQueryResp 菜单动作查询响应

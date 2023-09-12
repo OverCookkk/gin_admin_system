@@ -30,9 +30,15 @@ func (m *MenuActionResourceRepo) Query(ctx context.Context, req types.MenuAction
 
 	// 设置查询条件
 	// 先用menu_id在menuAction表中查，得到action_id再去menuActionResource表中去查
-	if req.MenuID != 0 {
+	if req.MenuID != 0 { // 查询一个menu_id
 		subDb := GetMenuActionDB(ctx, m.DB)
 		subQuery := subDb.Where("menu_id=?", req.MenuID).Select("id") // 查询action_id，返回[]int
+		db = db.Where("action_id IN (?)", subQuery)
+	}
+
+	if len(req.MenuIDs) != 0 { // 查询多个menu_id
+		subDb := GetMenuActionDB(ctx, m.DB)
+		subQuery := subDb.Where("menu_id IN (?)", req.MenuIDs).Select("id") // 查询action_id，返回[]int
 		db = db.Where("action_id IN (?)", subQuery)
 	}
 
