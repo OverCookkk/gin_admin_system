@@ -34,3 +34,12 @@ func (m MenuAcitonResources) ToTypesMenuActionResources() []types.MenuActionReso
 	}
 	return list
 }
+
+type TypesMenuActionResource types.MenuActionResource
+
+// 把返回前端的MenuActionResource转换为数据库的对应的MenuActionResource
+func (a TypesMenuActionResource) ToMenuActionResource() *MenuActionResource {
+	item := &MenuActionResource{}
+	copier.Copy(item, a)
+	return item
+}

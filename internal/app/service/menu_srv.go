@@ -141,12 +141,36 @@ func (m *MenuSrv) Create(ctx context.Context, item types.Menu) (*types.IDResult,
 	}
 	item.ParentPath = parentPath
 
-	// todo 事务实现 TransRepo.Exec；是否还需要create menu action
+	// todo 事务实现 TransRepo.Exec
+	// 先创建menuActionResource，再创建menuAction，最后创建menu
+	err = m.createAction(ctx, item.ID, item.Actions) // 创建menuActionResource封装在createAction函数里
+	if err != nil {
+		return nil, err
+	}
 	id, err := m.MenuRepo.Create(ctx, item)
 	if err != nil {
 		return nil, err
 	}
 	return &types.IDResult{ID: id}, nil
+}
+
+func (m *MenuSrv) createAction(ctx context.Context, menuId uint64, items types.MenuActions) error {
+	for _, aItem := range items {
+		aItem.MenuID = menuId
+		actionId, err := m.MenuActionRepo.Create(ctx, *aItem)
+		if err != nil {
+			return err
+		}
+
+		for _, rItem := range aItem.Resources {
+			rItem.ActionID = actionId
+			_, err = m.MenuActionResourceRepo.Create(ctx, *rItem)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (m *MenuSrv) Update(ctx context.Context, id uint64, item types.Menu) error {
@@ -229,7 +253,15 @@ func (m *MenuSrv) Delete(ctx context.Context, id uint64) error {
 
 	// todo 事务实现 TransRepo.Exec；删除MenuActionResource和MenuAction
 
-	// 删除该id的菜单
+	// 先删除menuActionResource，再删除menuAction，最后删除menu
+	err = m.MenuActionResourceRepo.DeleteByMenuID(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = m.MenuActionRepo.DeleteByMenuID(ctx, id)
+	if err != nil {
+		return err
+	}
 	return m.MenuRepo.Delete(ctx, id)
 }
 

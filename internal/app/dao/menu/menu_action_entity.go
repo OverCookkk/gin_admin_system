@@ -35,3 +35,12 @@ func (m MenuAcitons) ToTypesMenuActions() []types.MenuAction {
 	}
 	return list
 }
+
+type TypesMenuAction types.MenuAction
+
+// 把返回前端的MenuAction转换为数据库的对应的MenuAction
+func (a TypesMenuAction) ToMenuAction() *MenuAction {
+	item := &MenuAction{}
+	copier.Copy(item, a)
+	return item
+}

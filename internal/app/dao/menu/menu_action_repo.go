@@ -59,15 +59,16 @@ func (m *MenuActionRepo) Query(ctx context.Context, req types.MenuActionQueryReq
 // 	}
 // 	return menuItem.ToTypesMenu(), nil
 // }
-//
-// func (m *MenuActionRepo) Create(ctx context.Context, item types.Menu) (uint64, error) {
-// 	entityItem := TypesMenu(item).ToMenu()
-// 	result := GetMenuDB(ctx, m.DB).Create(&entityItem)
-// 	if err := result.Error; err != nil {
-// 		return 0, err
-// 	}
-// 	return uint64(entityItem.ID), nil
-// }
+
+func (m *MenuActionRepo) Create(ctx context.Context, item types.MenuAction) (uint64, error) {
+	entityItem := TypesMenuAction(item).ToMenuAction()
+	result := GetMenuActionDB(ctx, m.DB).Create(&entityItem)
+	if err := result.Error; err != nil {
+		return 0, err
+	}
+	return uint64(entityItem.ID), nil
+}
+
 //
 // func (m *MenuActionRepo) Update(ctx context.Context, id uint64, item types.Menu) error {
 // 	entityItem := TypesMenu(item).ToMenu()
@@ -85,15 +86,15 @@ func (m *MenuActionRepo) Query(ctx context.Context, req types.MenuActionQueryReq
 // 	}
 // 	return nil
 // }
-//
-// func (m *MenuActionRepo) Delete(ctx context.Context, id uint64) error {
-// 	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Delete(&Menus{})
-// 	if err := result.Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-//
+
+func (m *MenuActionRepo) DeleteByMenuID(ctx context.Context, menuID uint64) error {
+	result := GetMenuActionDB(ctx, m.DB).Where("menu_id=?", menuID).Delete(MenuAction{})
+	if err := result.Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // func (m *MenuActionRepo) UpdateStatus(ctx context.Context, id uint64, status int) error {
 // 	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Update("status", status)
 // 	if err := result.Error; err != nil {

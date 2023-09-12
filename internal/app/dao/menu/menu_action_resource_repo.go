@@ -50,3 +50,20 @@ func (m *MenuActionResourceRepo) Query(ctx context.Context, req types.MenuAction
 		PageResult: *result,
 	}, nil
 }
+
+func (m *MenuActionResourceRepo) Create(ctx context.Context, item types.MenuActionResource) (uint64, error) {
+	entityItem := TypesMenuActionResource(item).ToMenuActionResource()
+	result := GetMenuActionResourceDB(ctx, m.DB).Create(&entityItem)
+	if err := result.Error; err != nil {
+		return 0, err
+	}
+	return uint64(entityItem.ID), nil
+}
+
+func (m *MenuActionResourceRepo) DeleteByMenuID(ctx context.Context, menuID uint64) error {
+	// 先查出该menuID下的所有actionID，再用actionID删除MenuActionResource
+	subQuery := GetMenuActionDB(ctx, m.DB).Where("menu_id=?", menuID).Select("id")
+	result := GetMenuActionResourceDB(ctx, m.DB).Where("action_id IN (?)", subQuery).Delete(MenuActionResource{})
+
+	return result.Error
+}
