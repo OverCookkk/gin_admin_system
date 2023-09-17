@@ -58,7 +58,7 @@ type RoleMenuQueryOptions struct {
 }
 
 // RoleMenus 角色菜单列表
-type RoleMenus []*RoleMenu
+type RoleMenus []RoleMenu
 
 // ToMenuIDs 转换为菜单ID列表
 func (a RoleMenus) ToMenuIDs() []uint64 {

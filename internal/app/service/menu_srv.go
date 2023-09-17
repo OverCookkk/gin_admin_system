@@ -251,7 +251,7 @@ func (m *MenuSrv) Delete(ctx context.Context, id uint64) error {
 		return errors.New("forbid delete")
 	}
 
-	// todo 事务实现 TransRepo.Exec；删除MenuActionResource和MenuAction
+	// todo 事务实现 TransRepo.Exec；
 
 	// 先删除menuActionResource，再删除menuAction，最后删除menu
 	err = m.MenuActionResourceRepo.DeleteByMenuID(ctx, id)

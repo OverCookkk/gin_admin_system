@@ -54,7 +54,7 @@ func (r *RoleSrv) Create(ctx context.Context, item types.Role) (*types.IDResult,
 	for _, roleMenuItem := range item.RoleMenus {
 		// MenuID、ActionID前端会带过来
 		roleMenuItem.RoleID = roleId
-		err := r.RoleMenuRepo.Create(ctx, *roleMenuItem)
+		err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +121,7 @@ func (r *RoleSrv) Update(ctx context.Context, id uint64, item types.Role) error 
 	for _, roleMenuItem := range addRoleMenus {
 		// MenuID、ActionID前端会带过来
 		roleMenuItem.RoleID = roleId
-		err := r.RoleMenuRepo.Create(ctx, *roleMenuItem)
+		err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
 		if err != nil {
 			return err
 		}
@@ -134,8 +134,32 @@ func (r *RoleSrv) Update(ctx context.Context, id uint64, item types.Role) error 
 		}
 	}
 
-	// TODO：权限控制
+	// 先删除这角色全部的权限，重新给该角色逐一增加权限
+	r.Enforcer.DeletePermissionsForUser(strconv.FormatUint(item.ID, 10))
 
+	roleMenus, err := r.RoleMenuRepo.Query(ctx, types.RoleMenuQueryReq{
+		RoleID: id,
+	})
+	if err != nil {
+		return err
+	}
+	// 通过menu_id查询到menu_action_resource信息
+	resources, err := r.MenuActionResourceRepo.Query(ctx, types.MenuActionResourceQueryReq{
+		PaginationParam: types.PaginationParam{}, // 默认参数
+		MenuIDs:         types.RoleMenus(roleMenus.Data).ToMenuIDs(),
+	})
+	// 去重。不同的菜单动作下可能有相同的资源
+	resourceMap := make(map[string]*types.MenuActionResource)
+	for _, v := range resources.Data {
+		resourceMap[v.Method+v.Path] = &v
+	}
+	for _, v := range resourceMap {
+		// role_id, path, method
+		_, err := r.Enforcer.AddPermissionForUser(strconv.FormatUint(item.ID, 10), v.Path, v.Method)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -143,23 +167,23 @@ func (r *RoleSrv) compareRoleMenus(ctx context.Context, oldRoleMenus, newRoleMen
 	// 先转成map，方便查找
 	oldMap := make(map[string]*types.RoleMenu)
 	for _, item := range oldRoleMenus {
-		oldMap[fmt.Sprintf("%s-%s", item.MenuID, item.ActionID)] = item
+		oldMap[fmt.Sprintf("%s-%s", item.MenuID, item.ActionID)] = &item
 	}
 
 	newMap := make(map[string]*types.RoleMenu)
 	for _, item := range newRoleMenus {
-		newMap[fmt.Sprintf("%s-%s", item.MenuID, item.ActionID)] = item
+		newMap[fmt.Sprintf("%s-%s", item.MenuID, item.ActionID)] = &item
 	}
 
 	for k, v := range newMap {
 		if _, ok := oldMap[k]; !ok { // 新的item没找到，说明是新增的
-			addList = append(addList, v)
+			addList = append(addList, *v)
 		} else { // 找到了，就删除oldMap里面的值，这样剩下的就是删除的
 			delete(oldMap, k)
 		}
 	}
 	for _, v := range oldMap {
-		delList = append(delList, v)
+		delList = append(delList, *v)
 	}
 
 	return
@@ -197,7 +221,8 @@ func (r *RoleSrv) Delete(ctx context.Context, id uint64) error {
 		return err
 	}
 
-	// TODO：权限控制
+	// 最后删除该角色整个的权限（DeleteRole）
+	r.Enforcer.DeleteRole(strconv.FormatUint(id, 10))
 	return nil
 }
 
@@ -212,7 +237,39 @@ func (r *RoleSrv) UpdateStatus(ctx context.Context, id uint64, status int) error
 		return nil
 	}
 
-	// todo 权限控制
+	err = r.RoleRepo.UpdateStatus(ctx, id, status)
+	if err != nil {
+		return err
+	}
 
-	return r.RoleRepo.UpdateStatus(ctx, id, status)
+	// 禁用就删除该角色整个的权限（DeleteRole），启用就为该角色增加权限
+	if status == 1 {
+		roleMenus, err := r.RoleMenuRepo.Query(ctx, types.RoleMenuQueryReq{
+			RoleID: id,
+		})
+		if err != nil {
+			return err
+		}
+		// 通过menu_id查询到menu_action_resource信息
+		resources, err := r.MenuActionResourceRepo.Query(ctx, types.MenuActionResourceQueryReq{
+			PaginationParam: types.PaginationParam{}, // 默认参数
+			MenuIDs:         types.RoleMenus(roleMenus.Data).ToMenuIDs(),
+		})
+		// 去重。不同的菜单动作下可能有相同的资源
+		resourceMap := make(map[string]*types.MenuActionResource)
+		for _, v := range resources.Data {
+			resourceMap[v.Method+v.Path] = &v
+		}
+		for _, v := range resourceMap {
+			// role_id, path, method
+			_, err := r.Enforcer.AddPermissionForUser(strconv.FormatUint(item.ID, 10), v.Path, v.Method)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		r.Enforcer.DeleteRole(strconv.FormatUint(id, 10))
+	}
+
+	return nil
 }
