@@ -31,6 +31,8 @@ func (r *RoleSrv) Get(ctx context.Context, id uint64) (*types.Role, error) {
 	roleItem, err := r.RoleRepo.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	} else if roleItem == nil {
+		return nil, errors.New("role item not found")
 	}
 	return roleItem, nil
 }
@@ -167,6 +169,7 @@ func (r *RoleSrv) compareRoleMenus(ctx context.Context, oldRoleMenus, newRoleMen
 	// 先转成map，方便查找
 	oldMap := make(map[string]*types.RoleMenu)
 	for _, item := range oldRoleMenus {
+		// 同一个RoleID下有不同的MenuID和ActionID的组合，所以key如下
 		oldMap[fmt.Sprintf("%s-%s", item.MenuID, item.ActionID)] = &item
 	}
 

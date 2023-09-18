@@ -55,7 +55,7 @@ func (a *CasbinAdapter) loadRolePolicy(ctx context.Context, m casbinModel.Model)
 	}
 	roleMenuMap := make(map[uint64]types.RoleMenus) // role_id,  菜单id跟actionID的组合
 	for _, v := range roleMenuResult.Data {
-		roleMenuMap[v.RoleID] = append(roleMenuMap[v.RoleID], &v)
+		roleMenuMap[v.RoleID] = append(roleMenuMap[v.RoleID], v)
 	}
 
 	menuResourceResult, err := a.MenuResourceRepo.Query(ctx, types.MenuActionResourceQueryReq{})

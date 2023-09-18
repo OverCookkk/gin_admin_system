@@ -90,7 +90,7 @@ func (r *RoleRepo) UpdateParentPath(ctx context.Context, id uint64, parentPath s
 }
 
 func (r *RoleRepo) Delete(ctx context.Context, id uint64) error {
-	result := GetRoleDB(ctx, r.DB).Where("id=?", id).Delete(&Roles{})
+	result := GetRoleDB(ctx, r.DB).Where("id=?", id).Delete(&Role{})
 	if err := result.Error; err != nil {
 		return err
 	}
