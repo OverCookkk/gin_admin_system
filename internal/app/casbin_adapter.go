@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
+	"gin_admin_system/internal/app/dao/user"
 	"gin_admin_system/internal/app/types"
 	"gin_admin_system/pkg/logger"
 	casbinModel "github.com/casbin/casbin/v2/model"
@@ -20,25 +21,29 @@ type CasbinAdapter struct {
 	RoleRepo         *role.RoleRepo
 	RoleMenuRepo     *role.RoleMenuRepo
 	MenuResourceRepo *menu.MenuActionResourceRepo
+	UserRepo         *user.UserRepo
+	UserRoleRepo     *user.UserRoleRepo
 }
 
 func (a *CasbinAdapter) LoadPolicy(model casbinModel.Model) error {
 	ctx := context.Background()
+	// 角色-Path-Method 权限加载
 	err := a.loadRolePolicy(ctx, model)
 	if err != nil {
 		logger.WithContext(ctx).Errorf("Load casbin role policy error: %s", err.Error())
 		return err
 	}
 
-	// TODO:用户、角色权限加载
-	// err = a.loadUserPolicy(ctx, model)
-	// if err != nil {
-	// 	logger.WithContext(ctx).Errorf("Load casbin user policy error: %s", err.Error())
-	// 	return err
-	// }
+	// 用户-角色 权限加载
+	err = a.loadUserPolicy(ctx, model)
+	if err != nil {
+		logger.WithContext(ctx).Errorf("Load casbin user policy error: %s", err.Error())
+		return err
+	}
 	return nil
 }
 
+// Load role policy (p,role_id,path,method)
 func (a *CasbinAdapter) loadRolePolicy(ctx context.Context, m casbinModel.Model) error {
 	roleResult, err := a.RoleRepo.Query(ctx, types.RoleQueryReq{
 		Status: 1,
@@ -93,6 +98,36 @@ func (a *CasbinAdapter) loadRolePolicy(ctx context.Context, m casbinModel.Model)
 	return nil
 }
 
+// Load user policy (g,user_id,role_id)
+func (a *CasbinAdapter) loadUserPolicy(ctx context.Context, m casbinModel.Model) error {
+	userResult, err := a.UserRepo.Query(ctx, types.UserQueryReq{
+		Status: 1,
+	})
+	if err != nil {
+		return err
+	} else if len(userResult.Data) > 0 {
+		userRoleResult, err := a.UserRoleRepo.Query(ctx, types.UserRoleQueryReq{})
+		if err != nil {
+			return err
+		}
+
+		mUserRoles := ToUserIDMap(userRoleResult.Data)
+		for _, uitem := range userResult.Data {
+			if urs, ok := mUserRoles[uitem.ID]; ok {
+				for _, ur := range urs {
+					line := fmt.Sprintf("g,%d,%d", ur.UserID, ur.RoleID)
+					err := persist.LoadPolicyLine(line, m)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 // ToActionIDs 转换为动作ID列表
 func toActionIDs(a types.RoleMenus) []uint64 {
 	idList := make([]uint64, len(a))
@@ -105,6 +140,15 @@ func toActionIDs(a types.RoleMenus) []uint64 {
 		m[item.ActionID] = struct{}{}
 	}
 	return idList
+}
+
+// ToUserIDMap 转换为用户ID映射
+func ToUserIDMap(a types.UserRoles) map[uint64]types.UserRoles {
+	m := make(map[uint64]types.UserRoles)
+	for _, item := range a {
+		m[item.UserID] = append(m[item.UserID], item)
+	}
+	return m
 }
 
 // SavePolicy 报错所有的policy到持久层

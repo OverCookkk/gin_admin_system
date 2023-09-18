@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
+	"gin_admin_system/internal/app/dao/user"
 	"gin_admin_system/internal/app/types"
 	"github.com/casbin/casbin/v2"
 	"github.com/google/wire"
@@ -17,9 +18,9 @@ var RoleSet = wire.NewSet(wire.Struct(new(RoleSrv), "*"))
 type RoleSrv struct {
 	Enforcer *casbin.SyncedEnforcer
 	// TransRepo              *dao.TransRepo
-	RoleRepo     *role.RoleRepo
-	RoleMenuRepo *role.RoleMenuRepo
-	// UserRepo               *role.UserRepo
+	RoleRepo               *role.RoleRepo
+	RoleMenuRepo           *role.RoleMenuRepo
+	UserRepo               *user.UserRepo
 	MenuActionResourceRepo *menu.MenuActionResourceRepo
 }
 
@@ -201,16 +202,16 @@ func (r *RoleSrv) Delete(ctx context.Context, id uint64) error {
 		errors.New("角色不存在")
 	}
 
-	// todo:查询是否有用户属于这角色，如果有，则不用删除该角色
-	// queryUserResult, err := r.UserRepo.Query(ctx, types.UserQueryReq{
-	// 	// PaginationParam:  types.PaginationParam{},
-	// 	RoleIDs: nil,
-	// })
-	// if err != nil {
-	// 	return err
-	// } else if len(queryUserResult.Data) != 0 {
-	// 	return errors.New("不允许删除已经存在用户的角色")
-	// }
+	// 查询是否有用户属于这角色，如果有，则不能删除该角色
+	queryUserResult, err := r.UserRepo.Query(ctx, types.UserQueryReq{
+		PaginationParam: types.PaginationParam{},
+		RoleIDs:         []uint64{id},
+	})
+	if err != nil {
+		return err
+	} else if len(queryUserResult.Data) != 0 {
+		return errors.New("不允许删除已经存在用户的角色")
+	}
 
 	// 先删除角色菜单
 	err = r.RoleMenuRepo.DeleteByRoleID(ctx, id)
