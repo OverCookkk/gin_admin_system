@@ -4,6 +4,8 @@ go 1.18
 
 require (
 	github.com/casbin/casbin/v2 v2.77.2
+	github.com/dchest/captcha v1.0.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/wire v0.5.0
