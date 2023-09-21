@@ -19,6 +19,8 @@ func BuildWireInject() (*Injector, func(), error) {
 		api.ApiSet,
 		router.RouterSet,
 		InitGinEngine,
+		InitCasbin,
+		CasbinAdapterSet,
 		InjectorSet,
 	)
 	return new(Injector), nil, nil

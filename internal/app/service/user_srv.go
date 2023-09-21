@@ -11,7 +11,7 @@ import (
 	"strconv"
 )
 
-var UserSet = wire.NewSet(wire.Struct(new(UserSrv), "*"))
+var UserSrvSet = wire.NewSet(wire.Struct(new(UserSrv), "*"))
 
 type UserSrv struct {
 	Enforcer *casbin.SyncedEnforcer

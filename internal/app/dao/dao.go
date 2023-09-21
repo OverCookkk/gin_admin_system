@@ -4,14 +4,22 @@ import (
 	"gin_admin_system/internal/app/config"
 	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
+	"gin_admin_system/internal/app/dao/user"
 	"github.com/google/wire"
 	"gorm.io/gorm"
 	"strings"
 )
 
 var RepoSet = wire.NewSet(
+	// todo:util.TransSet,
+	// util.TransSet,
 	menu.MenuSet,
+	menu.MenuActionSet,
+	menu.MenuActionResourceSet,
 	role.RoleSet,
+	role.RoleMenuSet,
+	user.UserSet,
+	user.UserRoleSet,
 )
 
 func AutoMigrate(db *gorm.DB) error {
@@ -21,6 +29,10 @@ func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&menu.Menu{},
 		&menu.MenuAction{},
+		&menu.MenuActionResource{},
 		&role.Role{},
+		&role.RoleMenu{},
+		&user.User{},
+		&user.UserRole{},
 	)
 }

@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-var RoleSet = wire.NewSet(wire.Struct(new(RoleSrv), "*"))
+var RoleSrvSet = wire.NewSet(wire.Struct(new(RoleSrv), "*"))
 
 type RoleSrv struct {
 	Enforcer *casbin.SyncedEnforcer
