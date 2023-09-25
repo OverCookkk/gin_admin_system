@@ -17,6 +17,11 @@ func InitGinEngine(r router.IRouter) *gin.Engine {
 	// trace ID
 	app.Use(middleware.TraceMiddleware())
 
+	// CORS跨域配置
+	if config.C.CORS.Enable {
+		app.Use(middleware.CORSMiddleware())
+	}
+
 	r.Register(app)
 
 	return app
