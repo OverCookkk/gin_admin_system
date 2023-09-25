@@ -66,11 +66,11 @@ type (
 	stackKey    struct{}
 )
 
-func NewTraceIDContext(ctx context.Context, traceID string) context.Context {
+func SetTraceIDContext(ctx context.Context, traceID string) context.Context {
 	return context.WithValue(ctx, traceIDKey{}, traceID)
 }
 
-func FromTraceIDContext(ctx context.Context) string {
+func GetTraceIDContext(ctx context.Context) string {
 	v := ctx.Value(traceIDKey{})
 	if v != nil {
 		if s, ok := v.(string); ok {
@@ -140,7 +140,7 @@ func FromStackContext(ctx context.Context) error {
 func WithContext(ctx context.Context) *Entry {
 	fields := logrus.Fields{}
 
-	if v := FromTraceIDContext(ctx); v != "" {
+	if v := GetTraceIDContext(ctx); v != "" {
 		fields[TraceIDKey] = v
 	}
 
