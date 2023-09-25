@@ -60,16 +60,20 @@ func SetExpired(expired int) Option {
 	}
 }
 
-func New(opts ...Option) *JWTAuth {
+func New(store Storer, opts ...Option) *JWTAuth {
 	o := options{}
 	for _, opt := range opts {
 		opt(&o)
 	}
-	return &JWTAuth{opts: &o}
+	return &JWTAuth{
+		opts:  &o,
+		store: store,
+	}
 }
 
 type JWTAuth struct {
-	opts *options
+	opts  *options
+	store Storer // 存储器，可以使用不同的存储中间件，只要实现了Storer的接口就行
 }
 
 // GenerateToken 生成令牌
@@ -91,7 +95,7 @@ func (a *JWTAuth) GenerateToken(ctx context.Context, userID string) (string, err
 }
 
 // 解析令牌
-func (a *JWTAuth) parseToken(tokenString string) (*jwt.StandardClaims, error) {
+func (a *JWTAuth) ParseToken(tokenString string) (*jwt.StandardClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, a.opts.keyfunc)
 	if err != nil || !token.Valid {
 		return nil, errors.New("invalid token")
@@ -101,9 +105,38 @@ func (a *JWTAuth) parseToken(tokenString string) (*jwt.StandardClaims, error) {
 }
 
 func (a *JWTAuth) DestroyToken(ctx context.Context, tokenString string) error {
-	claims, err := a.parseToken(tokenString)
+	claims, err := a.ParseToken(tokenString)
 	if err != nil {
 		return err
 	}
 
+	// 已经销毁的token（退出登录）放入数据库中存储起来，防止继续使用该token
+	return a.store.Set(ctx, tokenString, time.Unix(claims.ExpiresAt, 0).Sub(time.Now()))
+}
+
+// Release 释放资源
+func (a *JWTAuth) Release() error {
+	return a.store.Close()
+}
+
+// ParseUserID 解析用户ID
+func (a *JWTAuth) ParseUserID(ctx context.Context, tokenString string) (string, error) {
+	if tokenString == "" {
+		return "", errors.New("invalid token")
+	}
+
+	claims, err := a.ParseToken(tokenString)
+	if err != nil {
+		return "", err
+	}
+
+	// 判断token是否在store中，存在则说明已经销毁
+	if exists, err := a.store.Check(ctx, tokenString); err != nil {
+		return "", err
+	} else if exists {
+		return "", errors.New("invalid token")
+	}
+
+	// userId-username 组合信息 在GenerateToken时保存在Subject中
+	return claims.Subject, nil
 }

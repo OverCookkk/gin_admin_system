@@ -2,6 +2,8 @@ package router
 
 import (
 	"gin_admin_system/internal/app/api"
+	"gin_admin_system/internal/app/middleware"
+	"gin_admin_system/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
@@ -17,7 +19,7 @@ type IRouter interface {
 }
 
 type Router struct {
-	// Auth jwt验证
+	Auth auth.JWTAuth // jwt验证
 	// Casbin 权限控制
 	// LoginAPI *api
 	MenuApi *api.MenuApi
@@ -37,6 +39,8 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 	g := app.Group("/api")
 
 	// 中间件
+	// todo:AllowPathPrefixSkipper
+	g.Use(middleware.UserAuthMiddleware(r.Auth))
 
 	v1 := g.Group("/v1")
 	{

@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"gin_admin_system/internal/app"
+	"gin_admin_system/internal/app/ginx"
 	"gin_admin_system/internal/app/service"
 	"gin_admin_system/internal/app/types"
 	"github.com/dchest/captcha"
@@ -17,6 +18,8 @@ type LoginAPI struct {
 }
 
 func (l *LoginAPI) Login(c *gin.Context) {
+	ctx := c.Request.Context()
+
 	var item types.LoginReq
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
@@ -30,19 +33,19 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	}
 
 	// 验证账号 密码
-	userItem, err := l.LoginSrv.Verify(c.Request.Context(), item.UserName, item.Password)
+	userItem, err := l.LoginSrv.Verify(ctx, item.UserName, item.Password)
 	if err != nil {
 		// 账号密码验证失败
 		// app.ReturnWithDetailed()
 	}
 
 	// 生成token
-	token, err := l.LoginSrv.GenerateToken(c.Request.Context(), l.formatTokenUserID(userItem.ID, userItem.UserName))
+	tokenInfo, err := l.LoginSrv.GenerateToken(ctx, l.formatTokenUserID(userItem.ID, userItem.UserName))
 	if err != nil {
 		// app.ReturnWithDetailed()
 	}
 
-	app.OkWithData(token, c)
+	app.OkWithData(tokenInfo, c)
 }
 
 func (l *LoginAPI) formatTokenUserID(userID uint64, userName string) string {
@@ -50,5 +53,12 @@ func (l *LoginAPI) formatTokenUserID(userID uint64, userName string) string {
 }
 
 func (l *LoginAPI) Logout(c *gin.Context) {
-	err := l.LoginSrv.
+	ctx := c.Request.Context()
+
+	err := l.LoginSrv.DestroyToken(ctx, ginx.GetToken(c))
+	if err != nil {
+		//
+		// app.ReturnWithDetailed()
+	}
+	app.Ok(c)
 }

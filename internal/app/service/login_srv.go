@@ -43,13 +43,13 @@ func (l *LoginSrv) Verify(ctx context.Context, userName, password string) (*type
 	return &userItem, nil
 }
 
-func (l *LoginSrv) GenerateToken(ctx context.Context, userID string) (string, error) {
+func (l *LoginSrv) GenerateToken(ctx context.Context, userID string) (*types.LoginTokenInfo, error) {
 	token, err := l.Auth.GenerateToken(ctx, userID)
 	if err != nil {
-		return "", errors.New("GenerateToken failed")
+		return nil, errors.New("GenerateToken failed")
 	}
 
-	return token, nil
+	return &types.LoginTokenInfo{AccessToken: token}, nil
 }
 
 func (l *LoginSrv) DestroyToken(ctx context.Context, tokenString string) error {
