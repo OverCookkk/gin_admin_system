@@ -14,6 +14,10 @@ func InitGinEngine(r router.IRouter) *gin.Engine {
 
 	// TODO:中间件
 	// todo:AllowPathPrefixSkipper
+
+	// Recover：painc时候记录堆栈信息
+	app.Use(middleware.RecoveryMiddleware())
+
 	// trace ID
 	app.Use(middleware.TraceMiddleware())
 
