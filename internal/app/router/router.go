@@ -4,6 +4,7 @@ import (
 	"gin_admin_system/internal/app/api"
 	"gin_admin_system/internal/app/middleware"
 	"gin_admin_system/pkg/auth"
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
@@ -19,8 +20,8 @@ type IRouter interface {
 }
 
 type Router struct {
-	Auth auth.JWTAuth // jwt验证
-	// Casbin 权限控制
+	Auth           auth.JWTAuth           // Auth jwt验证
+	CasbinEnforcer *casbin.SyncedEnforcer // Casbin 权限控制
 	// LoginAPI *api
 	MenuApi *api.MenuApi
 }
@@ -41,6 +42,10 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 	// 中间件
 	// todo:AllowPathPrefixSkipper
 	g.Use(middleware.UserAuthMiddleware(r.Auth))
+
+	g.Use(middleware.CasbinMiddleware(r.CasbinEnforcer))
+
+	// todo:限流中间件
 
 	v1 := g.Group("/v1")
 	{

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"gin_admin_system/internal/app/contextx"
 	"gin_admin_system/internal/app/ginx"
 	"gin_admin_system/pkg/auth"
 	"github.com/gin-gonic/gin"
@@ -9,13 +10,14 @@ import (
 	"time"
 )
 
-// func wrapUserAuthContext(c *gin.Context, userID uint64, userName string) {
-//     ctx := contextx.NewUserID(c.Request.Context(), userID)
-//     ctx = contextx.NewUserName(ctx, userName)
-//     ctx = logger.NewUserIDContext(ctx, userID)
-//     ctx = logger.NewUserNameContext(ctx, userName)
-//     c.Request = c.Request.WithContext(ctx)
-// }
+func wrapUserAuthContext(c *gin.Context, userID uint64, userName string) {
+	ctx := contextx.SetUserID(c.Request.Context(), userID)
+	// todo:获取到userID封装进其他组件中
+	// ctx = contextx.NewUserName(ctx, userName)
+	// ctx = logger.NewUserIDContext(ctx, userID)
+	// ctx = logger.NewUserNameContext(ctx, userName)
+	c.Request = c.Request.WithContext(ctx)
+}
 
 func UserAuthMiddleware(a auth.JWTAuth) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -46,9 +48,8 @@ func UserAuthMiddleware(a auth.JWTAuth) gin.HandlerFunc {
 			return
 		}
 
-		// todo:获取到userID封装进其他组件中
-		_, _ = strconv.ParseUint(tokenUserID[:idx], 10, 64)
-		// wrapUserAuthContext(c, userID, tokenUserID[idx+1:])
+		userID, _ := strconv.ParseUint(tokenUserID[:idx], 10, 64)
+		wrapUserAuthContext(c, userID, tokenUserID[idx+1:])
 		c.Next()
 	}
 }
