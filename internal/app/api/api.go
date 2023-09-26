@@ -6,6 +6,5 @@ var ApiSet = wire.NewSet(
 	MenuApiSet,
 	RoleApiSet,
 	UserApiSet,
-	// todo:LoginSet,
-	// LoginSet,
+	LoginApiSet,
 )

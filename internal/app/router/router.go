@@ -22,8 +22,10 @@ type IRouter interface {
 type Router struct {
 	Auth           auth.JWTAuth           // Auth jwt验证
 	CasbinEnforcer *casbin.SyncedEnforcer // Casbin 权限控制
-	// LoginAPI *api
-	MenuApi *api.MenuApi
+	LoginApi       *api.LoginAPI
+	MenuApi        *api.MenuApi
+	RoleApi        *api.RoleApi
+	UserApi        *api.UserApi
 }
 
 func (r *Router) Register(app *gin.Engine) error {
@@ -52,9 +54,13 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 		// 菜单
 		gMenu := v1.Group("/menus")
 		{
-			gMenu.GET("/menus", r.MenuApi.Query)
+			gMenu.GET("", r.MenuApi.Query)
 			gMenu.POST("Create", r.MenuApi.Create)
 			gMenu.GET(":id", r.MenuApi.Get)
+			gMenu.PUT(":id", r.MenuApi.Update)
+			gMenu.DELETE(":id", r.MenuApi.Delete)
+			gMenu.PATCH(":id/enable", r.MenuApi.Enable)
+			gMenu.PATCH(":id/disable", r.MenuApi.Disable)
 		}
 	}
 }

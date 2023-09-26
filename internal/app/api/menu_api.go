@@ -1,7 +1,7 @@
 package api
 
 import (
-	"gin_admin_system/internal/app"
+	"gin_admin_system/internal/app/response"
 	"gin_admin_system/internal/app/service"
 	"gin_admin_system/internal/app/types"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ func (m *MenuApi) Query(c *gin.Context) {
 	var req types.MenuQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 
@@ -34,7 +34,7 @@ func (m *MenuApi) Query(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.OkWithData(result, c)
+	response.OkWithData(result, c)
 }
 
 // QueryMenuTree 返回菜单树，包括孩子树
@@ -53,21 +53,21 @@ func (m *MenuApi) Get(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.OkWithData(menuItem, c)
+	response.OkWithData(menuItem, c)
 }
 
 func (m *MenuApi) Create(c *gin.Context) {
 	var item types.Menu
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 	idResult, err := m.MenuSrv.Create(c.Request.Context(), item)
 	if err != nil {
 		return
 	}
-	app.OkWithData(idResult, c)
+	response.OkWithData(idResult, c)
 }
 
 func (m *MenuApi) Update(c *gin.Context) {
@@ -80,14 +80,14 @@ func (m *MenuApi) Update(c *gin.Context) {
 	var item types.Menu
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 	err = m.MenuSrv.Update(c.Request.Context(), id, item)
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
 func (m *MenuApi) Delete(c *gin.Context) {
@@ -100,7 +100,7 @@ func (m *MenuApi) Delete(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
 func (m *MenuApi) Enable(c *gin.Context) {
@@ -113,10 +113,10 @@ func (m *MenuApi) Enable(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
-func (m *MenuApi) DisEnable(c *gin.Context) {
+func (m *MenuApi) Disable(c *gin.Context) {
 	idVal := c.Param("id")
 	id, err := strconv.ParseUint(idVal, 10, 64)
 	if err != nil {
@@ -126,5 +126,5 @@ func (m *MenuApi) DisEnable(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }

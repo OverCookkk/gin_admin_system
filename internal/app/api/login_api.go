@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"gin_admin_system/internal/app"
 	"gin_admin_system/internal/app/ginx"
+	"gin_admin_system/internal/app/response"
 	"gin_admin_system/internal/app/service"
 	"gin_admin_system/internal/app/types"
 	"github.com/dchest/captcha"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/wire"
 )
 
-var LoginSet = wire.NewSet(wire.Struct(new(LoginAPI), "*"))
+var LoginApiSet = wire.NewSet(wire.Struct(new(LoginAPI), "*"))
 
 type LoginAPI struct {
 	LoginSrv *service.LoginSrv
@@ -23,7 +23,7 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	var item types.LoginReq
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 	}
 
 	// 验证码的校验
@@ -36,16 +36,16 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	userItem, err := l.LoginSrv.Verify(ctx, item.UserName, item.Password)
 	if err != nil {
 		// 账号密码验证失败
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 	}
 
 	// 生成token
 	tokenInfo, err := l.LoginSrv.GenerateToken(ctx, l.formatTokenUserID(userItem.ID, userItem.UserName))
 	if err != nil {
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 	}
 
-	app.OkWithData(tokenInfo, c)
+	response.OkWithData(tokenInfo, c)
 }
 
 func (l *LoginAPI) formatTokenUserID(userID uint64, userName string) string {
@@ -58,7 +58,7 @@ func (l *LoginAPI) Logout(c *gin.Context) {
 	err := l.LoginSrv.DestroyToken(ctx, ginx.GetToken(c))
 	if err != nil {
 		//
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 	}
-	app.Ok(c)
+	response.Ok(c)
 }

@@ -5,6 +5,8 @@ import (
 	"gin_admin_system/internal/app/middleware"
 	"gin_admin_system/internal/app/router"
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 func InitGinEngine(r router.IRouter) *gin.Engine {
@@ -27,6 +29,10 @@ func InitGinEngine(r router.IRouter) *gin.Engine {
 	}
 
 	r.Register(app)
+
+	if config.C.Swagger {
+		app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	return app
 }

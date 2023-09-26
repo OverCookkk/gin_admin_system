@@ -20,6 +20,7 @@ func BuildWireInject() (*Injector, func(), error) {
 		router.RouterSet,
 		InitGinEngine,
 		InitCasbin,
+		InitAuth,
 		CasbinAdapterSet,
 		InjectorSet,
 	)

@@ -12,7 +12,7 @@ import (
 	"github.com/google/wire"
 )
 
-var LoginSet = wire.NewSet(wire.Struct(new(LoginSrv), "*"))
+var LoginSrvSet = wire.NewSet(wire.Struct(new(LoginSrv), "*"))
 
 type LoginSrv struct {
 	Auth           auth.JWTAuth

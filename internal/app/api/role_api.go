@@ -1,7 +1,7 @@
 package api
 
 import (
-	"gin_admin_system/internal/app"
+	"gin_admin_system/internal/app/response"
 	"gin_admin_system/internal/app/service"
 	"gin_admin_system/internal/app/types"
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-var RoleApiSet = wire.NewSet(wire.Struct(new(RoleApi)), "*")
+var RoleApiSet = wire.NewSet(wire.Struct(new(RoleApi), "*"))
 
 type RoleApi struct {
 	RoleSrv *service.RoleSrv
@@ -19,7 +19,7 @@ func (r *RoleApi) Query(c *gin.Context) {
 	var req types.RoleQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 
@@ -32,7 +32,7 @@ func (r *RoleApi) Query(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.OkWithData(result, c)
+	response.OkWithData(result, c)
 }
 
 func (r *RoleApi) Get(c *gin.Context) {
@@ -45,21 +45,21 @@ func (r *RoleApi) Get(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.OkWithData(menuItem, c)
+	response.OkWithData(menuItem, c)
 }
 
 func (r *RoleApi) Create(c *gin.Context) {
 	var item types.Role
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 	idResult, err := r.RoleSrv.Create(c, item)
 	if err != nil {
 		return
 	}
-	app.OkWithData(idResult, c)
+	response.OkWithData(idResult, c)
 }
 
 func (r *RoleApi) Update(c *gin.Context) {
@@ -72,14 +72,14 @@ func (r *RoleApi) Update(c *gin.Context) {
 	var item types.Role
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// app.ReturnWithDetailed()
+		// response.ReturnWithDetailed()
 		return
 	}
 	err = r.RoleSrv.Update(c, id, item)
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
 func (r *RoleApi) Delete(c *gin.Context) {
@@ -93,7 +93,7 @@ func (r *RoleApi) Delete(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
 func (r *RoleApi) Enable(c *gin.Context) {
@@ -107,7 +107,7 @@ func (r *RoleApi) Enable(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }
 
 func (r *RoleApi) Disable(c *gin.Context) {
@@ -121,5 +121,5 @@ func (r *RoleApi) Disable(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	app.Ok(c)
+	response.Ok(c)
 }

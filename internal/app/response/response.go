@@ -1,4 +1,4 @@
-package app
+package response
 
 import (
 	"gin_admin_system/pkg/errmsg"

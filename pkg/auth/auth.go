@@ -60,12 +60,12 @@ func SetExpired(expired int) Option {
 	}
 }
 
-func New(store Storer, opts ...Option) *JWTAuth {
+func New(store Storer, opts ...Option) JWTAuth {
 	o := options{}
 	for _, opt := range opts {
 		opt(&o)
 	}
-	return &JWTAuth{
+	return JWTAuth{
 		opts:  &o,
 		store: store,
 	}
