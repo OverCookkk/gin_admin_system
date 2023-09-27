@@ -50,8 +50,8 @@ func (u *UserRepo) Query(ctx context.Context, req types.UserQueryReq, opts ...ty
 		db = db.Order(util.ParseOrder(opt.OrderFields))
 	}
 
-	var userList *Users
-	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, userList)
+	var userList Users
+	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, &userList)
 	if err != nil {
 		return nil, err
 	}

@@ -37,8 +37,8 @@ func (u *UserRoleRepo) Query(ctx context.Context, req types.UserRoleQueryReq, op
 		db = db.Order(util.ParseOrder(opt.OrderFields))
 	}
 
-	var userRoleList *UserRoles
-	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, userRoleList)
+	var userRoleList UserRoles
+	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, &userRoleList)
 	if err != nil {
 		return nil, err
 	}

@@ -37,7 +37,7 @@ func (m *MenuActionRepo) Query(ctx context.Context, req types.MenuActionQueryReq
 	}
 
 	var menuAcitonList MenuAcitons
-	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, menuAcitonList)
+	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, &menuAcitonList)
 	if err != nil {
 		return nil, err
 	}

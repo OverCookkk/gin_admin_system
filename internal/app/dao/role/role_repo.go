@@ -39,8 +39,8 @@ func (r *RoleRepo) Query(ctx context.Context, req types.RoleQueryReq, opts ...ty
 	if len(opt.OrderFields) > 0 {
 		db = db.Order(util.ParseOrder(opt.OrderFields))
 	}
-	var roleList *Roles
-	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, roleList)
+	var roleList Roles
+	result, err := util.WrapPageQuery(ctx, db, req.PaginationParam, &roleList)
 	if err != nil {
 		return nil, err
 	}

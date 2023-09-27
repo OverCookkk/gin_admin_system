@@ -4,6 +4,8 @@ import (
 	"errors"
 	"gin_admin_system/internal/app/config"
 	"gin_admin_system/pkg/auth"
+	"gin_admin_system/pkg/auth/store/buntdb"
+	"gin_admin_system/pkg/auth/store/redis"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -36,8 +38,19 @@ func InitAuth() (auth.JWTAuth, func(), error) {
 	var store auth.Storer
 	switch cfg.Store {
 	case "redis":
-		// todo：存储器的构造
-		// rcfg ：=
+		rcfg := config.C.Redis
+		store = redis.NewStore(&redis.Config{
+			Addr:      rcfg.Addr,
+			Password:  rcfg.Password,
+			DB:        cfg.RedisDB,
+			KeyPrefix: cfg.RedisPrefix,
+		})
+	default:
+		s, err := buntdb.NewStore(cfg.FilePath)
+		if err != nil {
+			return auth.JWTAuth{}, nil, err
+		}
+		store = s
 	}
 
 	auth := auth.New(store, opts...)

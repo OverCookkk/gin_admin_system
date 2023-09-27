@@ -51,6 +51,14 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 
 	v1 := g.Group("/v1")
 	{
+		gLogin := v1.Group("login")
+		{
+			// gLogin.GET("captchaid", r.LoginApi.GetCaptcha)
+			// gLogin.GET("captcha", r.LoginApi.ResCaptcha)
+			gLogin.POST("", r.LoginApi.Login)
+			gLogin.POST("exit", r.LoginApi.Logout)
+		}
+
 		// 菜单
 		gMenu := v1.Group("/menus")
 		{
