@@ -16,6 +16,11 @@ type User struct {
 	UserRoles UserRoles `json:"user_roles" binding:"required,gt=0"`    // 角色授权
 }
 
+func (u *User) CleanSecure() *User {
+	u.Password = ""
+	return u
+}
+
 // UserQueryReq 查询请求
 type UserQueryReq struct {
 	PaginationParam
