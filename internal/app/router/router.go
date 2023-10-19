@@ -12,6 +12,8 @@ import (
 // 编译前验证Router是否实现了IRouter的全部接口
 var _ IRouter = (*Router)(nil)
 
+// 也可以改成这样写，NewRouter返回Router实例，wire.Bind绑定实现与接口
+// var RouterSet = wire.NewSet(NewRouter, wire.Bind(new(IRouter), new(*Router)))
 var RouterSet = wire.NewSet(wire.Struct(new(Router), "*"), wire.Bind(new(IRouter), new(*Router)))
 
 type IRouter interface {

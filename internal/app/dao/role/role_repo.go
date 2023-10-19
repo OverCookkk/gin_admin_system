@@ -65,7 +65,7 @@ func (r *RoleRepo) Get(ctx context.Context, id uint64) (*types.Role, error) {
 
 func (r *RoleRepo) Create(ctx context.Context, item types.Role) (uint64, error) {
 	entityItem := TypesRole(item).ToRole()
-	result := GetRoleDB(ctx, r.DB).Create(&entityItem)
+	result := GetRoleDB(ctx, r.DB).Create(entityItem)
 	if err := result.Error; err != nil {
 		return 0, err
 	}
@@ -74,7 +74,7 @@ func (r *RoleRepo) Create(ctx context.Context, item types.Role) (uint64, error) 
 
 func (r *RoleRepo) Update(ctx context.Context, id uint64, item types.Role) error {
 	entityItem := TypesRole(item).ToRole()
-	result := GetRoleDB(ctx, r.DB).Where("id=?", id).Updates(&entityItem)
+	result := GetRoleDB(ctx, r.DB).Where("id=?", id).Updates(entityItem)
 	if err := result.Error; err != nil {
 		return err
 	}

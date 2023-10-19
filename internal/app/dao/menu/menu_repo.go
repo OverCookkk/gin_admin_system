@@ -74,7 +74,7 @@ func (m *MenuRepo) Get(ctx context.Context, id uint64) (*types.Menu, error) {
 
 func (m *MenuRepo) Create(ctx context.Context, item types.Menu) (uint64, error) {
 	entityItem := TypesMenu(item).ToMenu()
-	result := GetMenuDB(ctx, m.DB).Create(&entityItem)
+	result := GetMenuDB(ctx, m.DB).Create(entityItem)
 	if err := result.Error; err != nil {
 		return 0, err
 	}
@@ -83,7 +83,7 @@ func (m *MenuRepo) Create(ctx context.Context, item types.Menu) (uint64, error) 
 
 func (m *MenuRepo) Update(ctx context.Context, id uint64, item types.Menu) error {
 	entityItem := TypesMenu(item).ToMenu()
-	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Updates(&entityItem)
+	result := GetMenuDB(ctx, m.DB).Where("id=?", id).Updates(entityItem)
 	if err := result.Error; err != nil {
 		return err
 	}

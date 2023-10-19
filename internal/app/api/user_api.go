@@ -1,6 +1,7 @@
 package api
 
 import (
+	"gin_admin_system/internal/app/response"
 	"gin_admin_system/internal/app/service"
 	"gin_admin_system/internal/app/types"
 	"github.com/gin-gonic/gin"
@@ -17,8 +18,7 @@ func (u *UserApi) Query(c *gin.Context) {
 	var req types.UserQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
-		// response.ReturnWithDetailed()
-		return
+		response.JsonError(c, err)
 	}
 
 	// req.Pagination = true

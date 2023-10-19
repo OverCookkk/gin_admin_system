@@ -75,17 +75,17 @@ func (u *UserRepo) Get(ctx context.Context, id uint64) (*types.User, error) {
 }
 
 func (u *UserRepo) Create(ctx context.Context, item types.User) (uint64, error) {
-	entityItem := TypesUser(item)
+	entityItem := TypesUser(item).ToUser()
 	result := GetUserDB(ctx, u.DB).Create(entityItem)
 	if err := result.Error; err != nil {
 		return 0, err
 	}
-	return entityItem.ID, nil
+	return uint64(entityItem.ID), nil
 }
 
 func (u *UserRepo) Update(ctx context.Context, id uint64, item types.User) error {
 	entityItem := TypesUser(item).ToUser()
-	result := GetUserDB(ctx, u.DB).Where("id=?", id).Updates(&entityItem)
+	result := GetUserDB(ctx, u.DB).Where("id=?", id).Updates(entityItem)
 	if err := result.Error; err != nil {
 		return err
 	}

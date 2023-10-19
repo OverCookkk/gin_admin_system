@@ -23,7 +23,7 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	var item types.LoginReq
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// response.ReturnWithDetailed()
+		response.JsonError(c, err)
 	}
 
 	// 验证码的校验
@@ -36,16 +36,16 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	userItem, err := l.LoginSrv.Verify(ctx, item.UserName, item.Password)
 	if err != nil {
 		// 账号密码验证失败
-		// response.ReturnWithDetailed()
+		response.JsonError(c, err)
 	}
 
 	// 生成token
 	tokenInfo, err := l.LoginSrv.GenerateToken(ctx, l.formatTokenUserID(userItem.ID, userItem.UserName))
 	if err != nil {
-		// response.ReturnWithDetailed()
+		response.JsonError(c, err)
 	}
 
-	response.OkWithData(tokenInfo, c)
+	response.JsonData(c, tokenInfo)
 }
 
 func (l *LoginAPI) formatTokenUserID(userID uint64, userName string) string {
@@ -57,8 +57,7 @@ func (l *LoginAPI) Logout(c *gin.Context) {
 
 	err := l.LoginSrv.DestroyToken(ctx, ginx.GetToken(c))
 	if err != nil {
-		//
-		// response.ReturnWithDetailed()
+		response.JsonError(c, err)
 	}
-	response.Ok(c)
+	response.JsonSuccess(c)
 }

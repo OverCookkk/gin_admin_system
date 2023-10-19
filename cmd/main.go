@@ -39,16 +39,6 @@ func SetMenuFile(s string) Option {
 	}
 }
 
-// @title gin-admin
-// @version 8.1.0
-// @description RBAC scaffolding based on GIN + GORM + CASBIN + WIRE.
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name Authorization
-// @schemes http https
-// @basePath /
-// @contact.name LyricTian
-// @contact.email tiannianshou@gmail.com
 func main() {
 	ctx := logger.NewTagContext(context.Background(), "__main__")
 

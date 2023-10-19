@@ -59,7 +59,7 @@ func (m *MenuActionResourceRepo) Query(ctx context.Context, req types.MenuAction
 
 func (m *MenuActionResourceRepo) Create(ctx context.Context, item types.MenuActionResource) (uint64, error) {
 	entityItem := TypesMenuActionResource(item).ToMenuActionResource()
-	result := GetMenuActionResourceDB(ctx, m.DB).Create(&entityItem)
+	result := GetMenuActionResourceDB(ctx, m.DB).Create(entityItem)
 	if err := result.Error; err != nil {
 		return 0, err
 	}

@@ -19,8 +19,7 @@ func (r *RoleApi) Query(c *gin.Context) {
 	var req types.RoleQueryReq
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
-		// response.ReturnWithDetailed()
-		return
+		response.JsonError(c, err)
 	}
 
 	// 此处封装了NewOrderFields和NewOrderField两个函数，巧妙在NewOrderField函数参数使用...传切片的特性，使得可以直接生成一个切片结构体
@@ -30,9 +29,9 @@ func (r *RoleApi) Query(c *gin.Context) {
 		),
 	})
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.OkWithData(result, c)
+	response.JsonData(c, result)
 }
 
 func (r *RoleApi) Get(c *gin.Context) {
@@ -43,23 +42,22 @@ func (r *RoleApi) Get(c *gin.Context) {
 	}
 	menuItem, err := r.RoleSrv.Get(c.Request.Context(), id)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.OkWithData(menuItem, c)
+	response.JsonData(c, menuItem)
 }
 
 func (r *RoleApi) Create(c *gin.Context) {
 	var item types.Role
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// response.ReturnWithDetailed()
-		return
+		response.JsonError(c, err)
 	}
 	idResult, err := r.RoleSrv.Create(c, item)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.OkWithData(idResult, c)
+	response.JsonData(c, idResult)
 }
 
 func (r *RoleApi) Update(c *gin.Context) {
@@ -72,14 +70,13 @@ func (r *RoleApi) Update(c *gin.Context) {
 	var item types.Role
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
-		// response.ReturnWithDetailed()
-		return
+		response.JsonError(c, err)
 	}
 	err = r.RoleSrv.Update(c, id, item)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.Ok(c)
+	response.JsonSuccess(c)
 }
 
 func (r *RoleApi) Delete(c *gin.Context) {
@@ -91,9 +88,9 @@ func (r *RoleApi) Delete(c *gin.Context) {
 
 	err = r.RoleSrv.Delete(c, id)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.Ok(c)
+	response.JsonSuccess(c)
 }
 
 func (r *RoleApi) Enable(c *gin.Context) {
@@ -105,9 +102,9 @@ func (r *RoleApi) Enable(c *gin.Context) {
 
 	err = r.RoleSrv.UpdateStatus(c, id, 1)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.Ok(c)
+	response.JsonSuccess(c)
 }
 
 func (r *RoleApi) Disable(c *gin.Context) {
@@ -119,7 +116,7 @@ func (r *RoleApi) Disable(c *gin.Context) {
 
 	err = r.RoleSrv.UpdateStatus(c, id, 2)
 	if err != nil {
-		return
+		response.JsonError(c, err)
 	}
-	response.Ok(c)
+	response.JsonSuccess(c)
 }

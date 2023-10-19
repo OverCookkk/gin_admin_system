@@ -62,17 +62,17 @@ func (u *UserRoleRepo) Get(ctx context.Context, id uint64) (*types.UserRole, err
 }
 
 func (u *UserRoleRepo) Create(ctx context.Context, item types.UserRole) (uint64, error) {
-	entityItem := TypesUserRole(item)
+	entityItem := TypesUserRole(item).ToUserRole()
 	result := GetUserRoleDB(ctx, u.DB).Create(entityItem)
 	if err := result.Error; err != nil {
 		return 0, err
 	}
-	return entityItem.ID, nil
+	return uint64(entityItem.ID), nil
 }
 
 func (u *UserRoleRepo) Update(ctx context.Context, id uint64, item types.UserRole) error {
 	entityItem := TypesUserRole(item).ToUserRole()
-	result := GetUserRoleDB(ctx, u.DB).Where("id=?", id).Updates(&entityItem)
+	result := GetUserRoleDB(ctx, u.DB).Where("id=?", id).Updates(entityItem)
 	if err := result.Error; err != nil {
 		return err
 	}
