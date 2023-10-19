@@ -21,6 +21,7 @@ func (m *MenuApi) Query(c *gin.Context) {
 	if err := c.ShouldBindQuery(req); err != nil {
 		// 参数错误
 		response.JsonError(c, err)
+		return
 	}
 
 	// 此处封装了NewOrderFields和NewOrderField两个函数，巧妙在NewOrderField函数参数使用...传切片的特性，使得可以直接生成一个切片结构体
@@ -32,6 +33,7 @@ func (m *MenuApi) Query(c *gin.Context) {
 	})
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonData(c, result)
 }
@@ -51,6 +53,7 @@ func (m *MenuApi) Get(c *gin.Context) {
 	menuItem, err := m.MenuSrv.Get(c.Request.Context(), id)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonData(c, menuItem)
 }
@@ -60,10 +63,12 @@ func (m *MenuApi) Create(c *gin.Context) {
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
 		response.JsonError(c, err)
+		return
 	}
 	idResult, err := m.MenuSrv.Create(c.Request.Context(), item)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonData(c, idResult)
 }
@@ -79,10 +84,12 @@ func (m *MenuApi) Update(c *gin.Context) {
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
 		response.JsonError(c, err)
+		return
 	}
 	err = m.MenuSrv.Update(c.Request.Context(), id, item)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonSuccess(c)
 }
@@ -96,6 +103,7 @@ func (m *MenuApi) Delete(c *gin.Context) {
 	err = m.MenuSrv.Delete(c.Request.Context(), id)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonSuccess(c)
 }
@@ -109,6 +117,7 @@ func (m *MenuApi) Enable(c *gin.Context) {
 	err = m.MenuSrv.UpdateStatus(c.Request.Context(), id, 1)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonSuccess(c)
 }
@@ -122,6 +131,7 @@ func (m *MenuApi) Disable(c *gin.Context) {
 	err = m.MenuSrv.UpdateStatus(c.Request.Context(), id, 2)
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonSuccess(c)
 }

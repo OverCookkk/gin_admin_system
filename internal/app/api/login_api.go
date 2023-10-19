@@ -9,6 +9,7 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"github.com/pkg/errors"
 )
 
 var LoginApiSet = wire.NewSet(wire.Struct(new(LoginAPI), "*"))
@@ -24,11 +25,13 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&item); err != nil {
 		// 参数错误
 		response.JsonError(c, err)
+		return
 	}
 
 	// 验证码的校验
 	if !captcha.VerifyString(item.CaptchaID, item.CaptchaCode) {
 		// 无效的验证码
+		response.JsonError(c, errors.New("Invalid verification code"))
 		return
 	}
 
@@ -37,12 +40,14 @@ func (l *LoginAPI) Login(c *gin.Context) {
 	if err != nil {
 		// 账号密码验证失败
 		response.JsonError(c, err)
+		return
 	}
 
 	// 生成token
 	tokenInfo, err := l.LoginSrv.GenerateToken(ctx, l.formatTokenUserID(userItem.ID, userItem.UserName))
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 
 	response.JsonData(c, tokenInfo)
@@ -58,6 +63,7 @@ func (l *LoginAPI) Logout(c *gin.Context) {
 	err := l.LoginSrv.DestroyToken(ctx, ginx.GetToken(c))
 	if err != nil {
 		response.JsonError(c, err)
+		return
 	}
 	response.JsonSuccess(c)
 }
