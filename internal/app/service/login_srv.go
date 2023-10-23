@@ -9,7 +9,9 @@ import (
 	"gin_admin_system/internal/app/types"
 	"gin_admin_system/pkg/auth"
 	"gin_admin_system/pkg/util/hash"
+	"github.com/dchest/captcha"
 	"github.com/google/wire"
+	"net/http"
 )
 
 var LoginSrvSet = wire.NewSet(wire.Struct(new(LoginSrv), "*"))
@@ -57,5 +59,25 @@ func (l *LoginSrv) DestroyToken(ctx context.Context, tokenString string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (l *LoginSrv) GetCaptcha(ctx context.Context, length int) (*types.LoginCaptcha, error) {
+	captchaID := captcha.NewLen(length)
+	return &types.LoginCaptcha{
+		CaptchaID: captchaID,
+	}, nil
+}
+
+func (l *LoginSrv) ResCaptcha(ctx context.Context, w http.ResponseWriter, captchaID string, width, height int) error {
+	err := captcha.WriteImage(w, captchaID, width, height)
+	if err != nil {
+		return err
+	}
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+	w.Header().Set("Content-Type", "image/png")
+
 	return nil
 }

@@ -12,3 +12,7 @@ type LoginTokenInfo struct {
 	// TokenType   string `json:"token_type"`   // 令牌类型
 	// ExpiresAt   int64  `json:"expires_at"`   // 过期时间戳
 }
+
+type LoginCaptcha struct {
+	CaptchaID string `json:"captcha_id"` // 验证码ID
+}
