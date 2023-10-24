@@ -16,3 +16,10 @@ type LoginTokenInfo struct {
 type LoginCaptcha struct {
 	CaptchaID string `json:"captcha_id"` // 验证码ID
 }
+
+type UserLoginInfo struct {
+	UserID   string `json:"user_id"`   // 用户ID
+	UserName string `json:"user_name"` // 用户名
+	RealName string `json:"real_name"` // 真实姓名
+	Roles    []Role `json:"roles"`     // 用户的角色列表
+}

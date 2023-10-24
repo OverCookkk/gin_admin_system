@@ -81,3 +81,53 @@ func (l *LoginSrv) ResCaptcha(ctx context.Context, w http.ResponseWriter, captch
 
 	return nil
 }
+
+func (l *LoginSrv) GetLoginInfo(ctx context.Context, userID uint64) (*types.UserLoginInfo, error) {
+	if types.CheckIsRootUser(ctx, userID) { // ROOT用户
+		root := types.GetRootUser()
+		return &types.UserLoginInfo{
+			UserName: root.UserName,
+			RealName: root.RealName,
+		}, nil
+	}
+
+	user, err := l.UserRepo.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	} else if user == nil {
+		return nil, errors.New("not found")
+	} else if user.Status != 1 {
+		return nil, errors.New("user forbidden")
+	}
+
+	userInfo := &types.UserLoginInfo{
+		UserID:   string(userID),
+		UserName: user.UserName,
+		RealName: user.RealName,
+		// Roles:    nil,
+	}
+
+	// 先查询该用户拥有哪些roleID
+	userRoleResult, err := l.UserRoleRepo.Query(ctx, types.UserRoleQueryReq{
+		PaginationParam: types.PaginationParam{},
+		UserID:          userID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// 取出该user所拥有的所有roleID，再去获取每个角色的信息
+	if roleIDs := userRoleResult.Data.ToRoleIDs(); len(roleIDs) > 0 {
+		roleResult, err := l.RoleRepo.Query(ctx, types.RoleQueryReq{
+			PaginationParam: types.PaginationParam{},
+			IDs:             roleIDs,
+			Status:          1,
+		})
+		if err != nil {
+			return nil, err
+		}
+		userInfo.Roles = roleResult.Data
+	}
+
+	return userInfo, nil
+}

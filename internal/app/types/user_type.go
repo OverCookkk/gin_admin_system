@@ -1,6 +1,27 @@
 package types
 
-import "time"
+import (
+	"context"
+	"gin_admin_system/internal/app/config"
+	"gin_admin_system/pkg/util/hash"
+	"time"
+)
+
+// GetRootUser 获取root用户
+func GetRootUser() *User {
+	user := config.C.Root
+	return &User{
+		ID:       user.UserID,
+		UserName: user.UserName,
+		RealName: user.RealName,
+		Password: hash.MD5String(user.Password),
+	}
+}
+
+// CheckIsRootUser 检查是否是root用户
+func CheckIsRootUser(ctx context.Context, userID uint64) bool {
+	return GetRootUser().ID == userID
+}
 
 // User 用户对象
 type User struct {
@@ -80,16 +101,16 @@ type UserRoles []UserRole
 // 	}
 // 	return m
 // }
-//
-// // ToRoleIDs 转换为角色ID列表
-// func (a UserRoles) ToRoleIDs() []uint64 {
-// 	list := make([]uint64, len(a))
-// 	for i, item := range a {
-// 		list[i] = item.RoleID
-// 	}
-// 	return list
-// }
-//
+
+// ToRoleIDs 转换为角色ID列表
+func (a UserRoles) ToRoleIDs() []uint64 {
+	list := make([]uint64, len(a))
+	for i, item := range a {
+		list[i] = item.RoleID
+	}
+	return list
+}
+
 // // ToUserIDMap 转换为用户ID映射
 // func (a UserRoles) ToUserIDMap() map[uint64]UserRoles {
 // 	m := make(map[uint64]UserRoles)

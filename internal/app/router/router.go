@@ -53,13 +53,22 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 
 	v1 := g.Group("/v1")
 	{
+		// 登录相关
 		gLogin := v1.Group("login")
 		{
-			// gLogin.GET("captchaid", r.LoginApi.GetCaptcha)
-			// gLogin.GET("captcha", r.LoginApi.ResCaptcha)
+			gLogin.GET("captchaid", r.LoginApi.GetCaptcha)
+			gLogin.GET("captcha", r.LoginApi.ResCaptcha)
 			gLogin.POST("", r.LoginApi.Login)
 			gLogin.POST("exit", r.LoginApi.Logout)
 		}
+
+		gCurrent := v1.Group("current")
+		{
+			// gCurrent.PUT("password", r.LoginApi.UpdatePassword)
+			gCurrent.GET("user", r.LoginApi.GetUserInfo)
+			// gCurrent.GET("menutree", r.LoginApi.QueryUserMenuTree)
+		}
+		// v1.POST("/refresh-token", r.LoginApi.RefreshToken)
 
 		// 菜单
 		gMenu := v1.Group("/menus")
@@ -71,6 +80,31 @@ func (r *Router) RegisterAPI(app *gin.Engine) {
 			gMenu.DELETE(":id", r.MenuApi.Delete)
 			gMenu.PATCH(":id/enable", r.MenuApi.Enable)
 			gMenu.PATCH(":id/disable", r.MenuApi.Disable)
+		}
+
+		// 角色
+		gRole := v1.Group("roles")
+		{
+			gRole.GET("", r.RoleApi.Query)
+			gRole.GET(":id", r.RoleApi.Get)
+			gRole.POST("", r.RoleApi.Create)
+			gRole.PUT(":id", r.RoleApi.Update)
+			gRole.DELETE(":id", r.RoleApi.Delete)
+			gRole.PATCH(":id/enable", r.RoleApi.Enable)
+			gRole.PATCH(":id/disable", r.RoleApi.Disable)
+		}
+		// v1.GET("/roles.select", r.RoleApi.QuerySelect)
+
+		// 用户
+		gUser := v1.Group("users")
+		{
+			gUser.GET("", r.UserApi.Query)
+			gUser.GET(":id", r.UserApi.Get)
+			gUser.POST("", r.UserApi.Create)
+			gUser.PUT(":id", r.UserApi.Update)
+			gUser.DELETE(":id", r.UserApi.Delete)
+			gUser.PATCH(":id/enable", r.UserApi.Enable)
+			gUser.PATCH(":id/disable", r.UserApi.Disable)
 		}
 	}
 }

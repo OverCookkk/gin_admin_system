@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"gin_admin_system/internal/app/config"
+	"gin_admin_system/internal/app/contextx"
 	"gin_admin_system/internal/app/ginx"
 	"gin_admin_system/internal/app/response"
 	"gin_admin_system/internal/app/service"
@@ -102,4 +103,15 @@ func (l *LoginAPI) ResCaptcha(c *gin.Context) {
 	if err != nil {
 		response.JsonError(c, err)
 	}
+}
+
+func (l *LoginAPI) GetUserInfo(c *gin.Context) {
+	ctx := c.Request.Context()
+	userInfo, err := l.LoginSrv.GetLoginInfo(ctx, contextx.GetUserID(ctx))
+	if err != nil {
+		response.JsonError(c, err)
+		return
+	}
+
+	response.JsonData(c, userInfo)
 }
