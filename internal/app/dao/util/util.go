@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"gin_admin_system/internal/app/contextx"
 	"gin_admin_system/internal/app/types"
 	"gorm.io/gorm"
 	"strings"
@@ -36,4 +37,16 @@ func WrapPageQuery(ctx context.Context, db *gorm.DB, params types.PaginationPara
 		CurrentPage: params.Current,
 		PageSize:    params.PageSize,
 	}, err
+}
+
+func GetDBWithModel(ctx context.Context, defDB *gorm.DB, m interface{}) *gorm.DB {
+	trans, ok := contextx.GetTrans(ctx)
+	if ok {
+		transDB, ok := trans.(*gorm.DB)
+		if ok {
+			return transDB.Model(m)
+		}
+	}
+
+	return defDB.Model(m)
 }

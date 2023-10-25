@@ -2,13 +2,14 @@ package menu
 
 import (
 	"context"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 func GetMenuActionDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
-	return defDB.Model(new(Menu))
+	return util.GetDBWithModel(ctx, defDB, new(MenuAction)) // defDB.Model(new(MenuAction))
 }
 
 type MenuAction struct {

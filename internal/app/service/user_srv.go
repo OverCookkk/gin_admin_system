@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"gin_admin_system/internal/app/dao/user"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"gin_admin_system/pkg/util/hash"
 	"github.com/casbin/casbin/v2"
@@ -14,8 +15,8 @@ import (
 var UserSrvSet = wire.NewSet(wire.Struct(new(UserSrv), "*"))
 
 type UserSrv struct {
-	Enforcer *casbin.SyncedEnforcer
-	// TransRepo    *dao.TransRepo
+	Enforcer     *casbin.SyncedEnforcer
+	Trans        *util.Transaction
 	UserRepo     *user.UserRepo
 	UserRoleRepo *user.UserRoleRepo
 	// RoleRepo     *user.RoleRepo
@@ -60,21 +61,28 @@ func (u *UserSrv) Create(ctx context.Context, item types.User) (*types.IDResult,
 	}
 
 	item.Password = hash.SHA1String(item.Password)
-	// todo: 事务实现
 
-	// 先在user表创建用户信息
-	userID, err := u.UserRepo.Create(ctx, item)
+	var userID uint64
+	err = u.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先在user表创建用户信息
+		var err error
+		userID, err = u.UserRepo.Create(ctx, item)
+		if err != nil {
+			return err
+		}
+
+		// 再在user_role表创建用户与角色映射信息
+		for _, v := range item.UserRoles {
+			v.UserID = userID
+			_, err = u.UserRoleRepo.Create(ctx, v)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	// 再在user_role表创建用户与角色映射信息
-	for _, v := range item.UserRoles {
-		v.UserID = userID
-		_, err := u.UserRoleRepo.Create(ctx, v)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// 权限控制：给用户逐个添加所拥有的角色
@@ -120,20 +128,25 @@ func (u *UserSrv) Update(ctx context.Context, id uint64, item types.User) error 
 
 	addUserRoles, deleteUserRoles := u.compareUserRoles(ctx, oldItem.UserRoles, item.UserRoles)
 
-	// TODO:事务实现
-	for _, v := range addUserRoles {
-		v.UserID = id
-		_, err := u.UserRoleRepo.Create(ctx, v)
-		if err != nil {
-			return err
+	err = u.Trans.Exec(ctx, func(ctx context.Context) error {
+		for _, v := range addUserRoles {
+			v.UserID = id
+			_, err := u.UserRoleRepo.Create(ctx, v)
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	for _, v := range deleteUserRoles {
-		err := u.UserRoleRepo.Delete(ctx, v.ID)
-		if err != nil {
-			return err
+		for _, v := range deleteUserRoles {
+			err := u.UserRoleRepo.Delete(ctx, v.ID)
+			if err != nil {
+				return err
+			}
 		}
+		return u.UserRepo.Update(ctx, id, item)
+	})
+	if err != nil {
+		return err
 	}
 
 	// 权限控制
@@ -184,12 +197,13 @@ func (u *UserSrv) Delete(ctx context.Context, id uint64) error {
 		return errors.New("user item not found")
 	}
 
-	// todo:事务实现
-	err = u.UserRoleRepo.DeleteByUserID(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = u.UserRepo.Delete(ctx, id)
+	err = u.Trans.Exec(ctx, func(ctx context.Context) error {
+		err := u.UserRoleRepo.DeleteByUserID(ctx, id)
+		if err != nil {
+			return err
+		}
+		return u.UserRepo.Delete(ctx, id)
+	})
 	if err != nil {
 		return err
 	}

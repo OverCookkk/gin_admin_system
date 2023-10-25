@@ -6,6 +6,7 @@ import (
 	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
 	"gin_admin_system/internal/app/dao/user"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/casbin/casbin/v2"
 	"github.com/google/wire"
@@ -16,8 +17,8 @@ import (
 var RoleSrvSet = wire.NewSet(wire.Struct(new(RoleSrv), "*"))
 
 type RoleSrv struct {
-	Enforcer *casbin.SyncedEnforcer
-	// TransRepo              *dao.TransRepo
+	Enforcer               *casbin.SyncedEnforcer
+	Trans                  *util.Transaction
 	RoleRepo               *role.RoleRepo
 	RoleMenuRepo           *role.RoleMenuRepo
 	UserRepo               *user.UserRepo
@@ -45,22 +46,27 @@ func (r *RoleSrv) Create(ctx context.Context, item types.Role) (*types.IDResult,
 		return nil, err
 	}
 
-	// TODO: 事务实现
+	var roleId uint64
+	err = r.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先创建角色表
+		roleId, err := r.RoleRepo.Create(ctx, item)
+		if err != nil {
+			return err
+		}
 
-	// 先创建角色表
-	roleId, err := r.RoleRepo.Create(ctx, item)
+		// 再创建角色菜单表 create
+		for _, roleMenuItem := range item.RoleMenus {
+			// MenuID、ActionID前端会带过来
+			roleMenuItem.RoleID = roleId
+			err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	// 再创建角色菜单表 create
-	for _, roleMenuItem := range item.RoleMenus {
-		// MenuID、ActionID前端会带过来
-		roleMenuItem.RoleID = roleId
-		err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// 权限控制
@@ -111,30 +117,30 @@ func (r *RoleSrv) Update(ctx context.Context, id uint64, item types.Role) error 
 		}
 	}
 
-	// TODO: 事务实现
+	err = r.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 角色菜单表 Create and Delete；菜单可能增加或者减少，菜单操作可能增加或者减少，所以更新前要先对比新菜单和老菜单
+		addRoleMenus, deleteRoleMenus := r.compareRoleMenus(ctx, oldItem.RoleMenus, item.RoleMenus)
+		for _, roleMenuItem := range addRoleMenus {
+			// MenuID、ActionID前端会带过来
+			roleMenuItem.RoleID = id
+			err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
+			if err != nil {
+				return err
+			}
+		}
 
-	// 角色表 Create
-	roleId, err := r.RoleRepo.Create(ctx, item)
+		for _, roleMenuItem := range deleteRoleMenus {
+			err := r.Delete(ctx, roleMenuItem.RoleID)
+			if err != nil {
+				return err
+			}
+		}
+
+		// 角色表 Update
+		return r.RoleRepo.Update(ctx, id, item)
+	})
 	if err != nil {
 		return err
-	}
-
-	// 角色菜单表 Create；菜单可能增加或者减少，菜单操作可能增加或者减少，所以更新前要先对比新菜单和老菜单
-	addRoleMenus, deleteRoleMenus := r.compareRoleMenus(ctx, oldItem.RoleMenus, item.RoleMenus)
-	for _, roleMenuItem := range addRoleMenus {
-		// MenuID、ActionID前端会带过来
-		roleMenuItem.RoleID = roleId
-		err := r.RoleMenuRepo.Create(ctx, roleMenuItem)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, roleMenuItem := range deleteRoleMenus {
-		err := r.Delete(ctx, roleMenuItem.RoleID)
-		if err != nil {
-			return err
-		}
 	}
 
 	// 先删除这角色全部的权限，重新给该角色逐一增加权限
@@ -213,14 +219,16 @@ func (r *RoleSrv) Delete(ctx context.Context, id uint64) error {
 		return errors.New("不允许删除已经存在用户的角色")
 	}
 
-	// 先删除角色菜单
-	err = r.RoleMenuRepo.DeleteByRoleID(ctx, id)
-	if err != nil {
-		return err
-	}
+	err = r.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先删除角色菜单
+		err := r.RoleMenuRepo.DeleteByRoleID(ctx, id)
+		if err != nil {
+			return err
+		}
 
-	// 再删除角色
-	err = r.RoleRepo.Delete(ctx, id)
+		// 再删除角色
+		return r.RoleRepo.Delete(ctx, id)
+	})
 	if err != nil {
 		return err
 	}

@@ -2,13 +2,14 @@ package menu
 
 import (
 	"context"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 func GetMenuDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
-	return defDB.Model(new(Menu))
+	return util.GetDBWithModel(ctx, defDB, new(Menu)) // defDB.Model(new(Menu))
 }
 
 // Menu 菜单数据库实体结构

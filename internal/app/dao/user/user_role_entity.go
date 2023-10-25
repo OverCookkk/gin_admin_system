@@ -2,13 +2,14 @@ package user
 
 import (
 	"context"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 func GetUserRoleDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
-	return defDB.Model(new(UserRole))
+	return util.GetDBWithModel(ctx, defDB, new(UserRole)) // defDB.Model(new(UserRole))
 }
 
 type UserRole struct {

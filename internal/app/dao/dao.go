@@ -5,14 +5,14 @@ import (
 	"gin_admin_system/internal/app/dao/menu"
 	"gin_admin_system/internal/app/dao/role"
 	"gin_admin_system/internal/app/dao/user"
+	"gin_admin_system/internal/app/dao/util"
 	"github.com/google/wire"
 	"gorm.io/gorm"
 	"strings"
 )
 
 var RepoSet = wire.NewSet(
-	// todo:util.TransSet,
-	// util.TransSet,
+	util.TransSet,
 	menu.MenuSet,
 	menu.MenuActionSet,
 	menu.MenuActionResourceSet,

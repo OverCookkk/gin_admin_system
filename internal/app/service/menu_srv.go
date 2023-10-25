@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gin_admin_system/internal/app/dao/menu"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/google/wire"
 )
@@ -12,6 +13,7 @@ import (
 var MenuSrvSet = wire.NewSet(wire.Struct(new(MenuSrv), "*"))
 
 type MenuSrv struct {
+	Trans                  *util.Transaction
 	MenuRepo               *menu.MenuRepo
 	MenuActionRepo         *menu.MenuActionRepo
 	MenuActionResourceRepo *menu.MenuActionResourceRepo
@@ -141,16 +143,23 @@ func (m *MenuSrv) Create(ctx context.Context, item types.Menu) (*types.IDResult,
 	}
 	item.ParentPath = parentPath
 
-	// todo 事务实现 TransRepo.Exec
-	// 先创建menuActionResource，再创建menuAction，最后创建menu
-	err = m.createAction(ctx, item.ID, item.Actions) // 创建menuActionResource封装在createAction函数里
+	var id uint64
+	err = m.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先创建menuActionResource，再创建menuAction，最后创建menu
+		err = m.createAction(ctx, item.ID, item.Actions) // 创建menuActionResource封装在createAction函数里
+		if err != nil {
+			return err
+		}
+		id, err = m.MenuRepo.Create(ctx, item)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	id, err := m.MenuRepo.Create(ctx, item)
-	if err != nil {
-		return nil, err
-	}
+
 	return &types.IDResult{ID: id}, nil
 }
 
@@ -197,14 +206,16 @@ func (m *MenuSrv) Update(ctx context.Context, id uint64, item types.Menu) error 
 		item.ParentPath = oldItem.ParentPath
 	}
 
-	// todo 事务实现 TransRepo.Exec；是否还需要update menu action
-	// 先更新当前菜单下子菜单中的父菜单路径
-	err = m.updateChildParentPath(ctx, *oldItem, item)
-	if err != nil {
-		return err
-	}
-	// 再更新当前的菜单
-	return m.MenuRepo.Update(ctx, id, item)
+	// todo:是否还需要update menu action
+	return m.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先更新当前菜单下子菜单中的父菜单路径
+		err := m.updateChildParentPath(ctx, *oldItem, item)
+		if err != nil {
+			return err
+		}
+		// 再更新当前的菜单
+		return m.MenuRepo.Update(ctx, id, item)
+	})
 }
 
 func (m *MenuSrv) updateChildParentPath(ctx context.Context, oldItem, newItem types.Menu) error {
@@ -251,18 +262,18 @@ func (m *MenuSrv) Delete(ctx context.Context, id uint64) error {
 		return errors.New("forbid delete")
 	}
 
-	// todo 事务实现 TransRepo.Exec；
-
-	// 先删除menuActionResource，再删除menuAction，最后删除menu
-	err = m.MenuActionResourceRepo.DeleteByMenuID(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = m.MenuActionRepo.DeleteByMenuID(ctx, id)
-	if err != nil {
-		return err
-	}
-	return m.MenuRepo.Delete(ctx, id)
+	return m.Trans.Exec(ctx, func(ctx context.Context) error {
+		// 先删除menuActionResource，再删除menuAction，最后删除menu
+		err := m.MenuActionResourceRepo.DeleteByMenuID(ctx, id)
+		if err != nil {
+			return err
+		}
+		err = m.MenuActionRepo.DeleteByMenuID(ctx, id)
+		if err != nil {
+			return err
+		}
+		return m.MenuRepo.Delete(ctx, id)
+	})
 }
 
 func (m *MenuSrv) UpdateStatus(ctx context.Context, id uint64, status int) error {

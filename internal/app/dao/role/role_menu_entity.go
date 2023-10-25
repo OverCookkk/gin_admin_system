@@ -2,13 +2,14 @@ package role
 
 import (
 	"context"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 func GetRoleMenuDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
-	return defDB.Model(new(RoleMenu))
+	return util.GetDBWithModel(ctx, defDB, new(RoleMenu)) // defDB.Model(new(RoleMenu))
 }
 
 type RoleMenu struct {

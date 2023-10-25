@@ -2,13 +2,14 @@ package role
 
 import (
 	"context"
+	"gin_admin_system/internal/app/dao/util"
 	"gin_admin_system/internal/app/types"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
 
 func GetRoleDB(ctx context.Context, defDB *gorm.DB) *gorm.DB {
-	return defDB.Model(new(Role))
+	return util.GetDBWithModel(ctx, defDB, new(Role)) // defDB.Model(new(Role))
 }
 
 type Role struct {
